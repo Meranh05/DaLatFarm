@@ -74,7 +74,7 @@ Trong bối cảnh thương mại điện tử phát triển mạnh, một kênh
 ### 8. Cấu trúc thư mục (tóm tắt)
 
 ```
-DaLatSpecialties/
+DaLatFarm/
   public/
     favicon.ico
     logo.png
@@ -150,7 +150,7 @@ DaLatSpecialties/
 ### 14. Cấu trúc cụ thể và ghi chú
 
 ```
-DaLatSpecialties/
+DaLatFarm/
 ├── public/                      # Tài nguyên tĩnh, được phục vụ trực tiếp
 │   ├── favicon.ico              # Biểu tượng trang
 │   ├── logo.png                 # Logo dự án (hiển thị trên header/login)
