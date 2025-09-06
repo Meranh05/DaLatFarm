@@ -8,6 +8,8 @@ import AdminEvents from '../pages/admin/AdminEvents'
 import AdminAnalytics from '../pages/admin/AdminAnalytics'
 import AdminProfile from '../pages/admin/AdminProfile'
 import AdminLogin from '../pages/admin/AdminLogin'
+import AdminRealTime from '../pages/admin/AdminRealTime'
+import AdminActivity from '../pages/admin/AdminActivity'
 
 const AdminRoutes = () => {
 
@@ -19,6 +21,8 @@ const AdminRoutes = () => {
         <Route path="/users" element={<AdminUsers />} />
         <Route path="/events" element={<AdminEvents />} />
         <Route path="/analytics" element={<AdminAnalytics />} />
+        <Route path="/realtime" element={<AdminRealTime />} />
+        <Route path="/activity" element={<AdminActivity />} />
         <Route path="/profile" element={<AdminProfile />} />
         <Route path="/login" element={<AdminLogin />} />
       </Routes>

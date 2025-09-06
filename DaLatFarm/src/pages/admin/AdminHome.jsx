@@ -15,6 +15,8 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { useProducts } from '../../context/ProductContext'
+import { productsAPI, statsAPI, eventsAPI, activitiesAPI } from '../../services/apiService'
+import ActivityList from './ActivityList'
 
 const AdminHome = () => {
   const [isLoading, setIsLoading] = useState(true)
@@ -69,16 +71,22 @@ const AdminHome = () => {
     return () => clearTimeout(timer)
   }, [products])
 
-  const updateStats = () => {
+  const updateStats = async () => {
     const totalProducts = products.length
     const totalViews = products.reduce((sum, p) => sum + (p.views || 0), 0)
-    const activeProducts = products.filter(p => p.featured).length
-    
+    const todayVisits = await statsAPI.getTodayVisitCount().catch(() => 0)
+    const allEvents = await eventsAPI.getAll().catch(() => [])
+    const startOfToday = new Date(); startOfToday.setHours(0,0,0,0)
+    const upcomingEvents = allEvents.filter(e => {
+      const d = typeof e.date === 'number' ? e.date : Date.parse(e.date)
+      return !Number.isNaN(d) && d >= startOfToday.getTime()
+    }).length
+
     setStats([
       {
         name: 'Tổng sản phẩm',
         value: totalProducts.toString(),
-        change: `+${Math.floor(Math.random() * 10) + 1}%`,
+        change: '',
         changeType: 'increase',
         icon: Package,
         color: 'bg-gradient-to-r from-blue-500 to-blue-600',
@@ -86,9 +94,9 @@ const AdminHome = () => {
         trend: 'up'
       },
       {
-        name: 'Người dùng truy cập',
-        value: (Math.floor(Math.random() * 1000) + 500).toString(),
-        change: `+${Math.floor(Math.random() * 20) + 5}%`,
+        name: 'Người dùng truy cập (hôm nay)',
+        value: String(todayVisits),
+        change: '',
         changeType: 'increase',
         icon: Users,
         color: 'bg-gradient-to-r from-green-500 to-green-600',
@@ -96,9 +104,9 @@ const AdminHome = () => {
         trend: 'up'
       },
       {
-        name: 'Lượt xem tháng',
+        name: 'Tổng lượt xem',
         value: totalViews.toString(),
-        change: `+${Math.floor(Math.random() * 15) + 5}%`,
+        change: '',
         changeType: 'increase',
         icon: Eye,
         color: 'bg-gradient-to-r from-purple-500 to-purple-600',
@@ -107,8 +115,8 @@ const AdminHome = () => {
       },
       {
         name: 'Sự kiện sắp tới',
-        value: (Math.floor(Math.random() * 10) + 5).toString(),
-        change: `+${Math.floor(Math.random() * 5) + 1}`,
+        value: String(upcomingEvents),
+        change: '',
         changeType: 'increase',
         icon: Calendar,
         color: 'bg-gradient-to-r from-orange-500 to-orange-600',
@@ -172,7 +180,18 @@ const AdminHome = () => {
               Cập nhật lần cuối: {new Date().toLocaleString('vi-VN')}
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-right space-y-2">
+            <div className="flex items-center justify-end space-x-2">
+              <a
+                href={`https://console.firebase.google.com/project/${import.meta.env.VITE_FIREBASE_PROJECT_ID}/firestore/data/~2Fevents`}
+                target="_blank" rel="noreferrer"
+                className="px-3 py-2 text-xs bg-white/20 hover:bg-white/30 rounded-md"
+              >Mở Firestore</a>
+              <Link
+                to="/admin/events"
+                className="px-3 py-2 text-xs bg-orange-500 hover:bg-orange-600 rounded-md text-white"
+              >Thêm sự kiện</Link>
+            </div>
             <p className="text-2xl font-bold">{new Date().toLocaleDateString('vi-VN')}</p>
             <p className="text-blue-200">{new Date().toLocaleDateString('vi-VN', { weekday: 'long' })}</p>
           </div>
@@ -288,48 +307,7 @@ const AdminHome = () => {
             <span>Làm mới</span>
           </button>
         </div>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <Package className="w-5 h-5 text-blue-500" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-900">
-                <span className="font-medium">Sản phẩm mới</span> đã được thêm vào catalog
-              </p>
-              <p className="text-xs text-gray-500">2 phút trước</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <Users className="w-5 h-5 text-green-500" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-900">
-                <span className="font-medium">25 người dùng</span> đã truy cập website
-              </p>
-              <p className="text-xs text-gray-500">15 phút trước</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 rounded-lg bg-purple-50">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-            <Eye className="w-5 h-5 text-purple-500" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-900">
-                <span className="font-medium">Lượt xem</span> tăng 15% so với hôm qua
-              </p>
-              <p className="text-xs text-gray-500">1 giờ trước</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 rounded-lg bg-orange-50">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <Calendar className="w-5 h-5 text-orange-500" />
-            <div className="flex-1">
-              <p className="text-sm text-gray-900">
-                <span className="font-medium">Sự kiện mới</span> đã được lên lịch
-              </p>
-              <p className="text-xs text-gray-500">2 giờ trước</p>
-            </div>
-          </div>
-        </div>
+        <ActivityList />
       </div>
     </div>
   )

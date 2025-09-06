@@ -21,8 +21,8 @@ const AdminHeader = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Simulate notifications
-    setNotifications([
+    // Seed sample notifications (could be hooked to Firestore later)
+    const seeded = [
       {
         id: 1,
         type: 'product',
@@ -44,9 +44,14 @@ const AdminHeader = () => {
         time: '1 giờ trước',
         isRead: true
       }
-    ])
-    setUnreadCount(2)
+    ]
+    setNotifications(seeded)
   }, [])
+
+  // Keep unreadCount accurate based on notifications state
+  useEffect(() => {
+    setUnreadCount(notifications.filter(n => !n.isRead).length)
+  }, [notifications])
 
   const handleLogout = () => {
     // Add logout logic here
@@ -54,12 +59,11 @@ const AdminHeader = () => {
   }
 
   const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, isRead: true } : notif
-      )
-    )
-    setUnreadCount(prev => Math.max(0, prev - 1))
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n))
+  }
+
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
   }
 
   const getNotificationIcon = (type) => {
@@ -89,19 +93,19 @@ const AdminHeader = () => {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left side - Logo */}
           <div className="flex items-center">
             <Link to="/admin" className="flex items-center space-x-3">
               <img
-                src="/images/logo.jpg"
-                alt="DA LAT FARM"
-                className="w-8 h-8 rounded-lg object-cover"
+                src="/images/logoAdmin.png"
+                alt="DaLat Farm"
+                className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-200 shadow"
               />
               <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-gray-900">DA LAT FARM</h1>
+                <h1 className="text-lg font-bold text-gray-900">DaLat Farm</h1>
                 <p className="text-xs text-gray-500">Admin Panel</p>
               </div>
             </Link>
@@ -139,7 +143,7 @@ const AdminHeader = () => {
                   <div className="px-4 py-2 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-900">Thông báo</h3>
-                      <button className="text-xs text-blue-600 hover:text-blue-700">
+                      <button onClick={markAllAsRead} className="text-xs text-blue-600 hover:text-blue-700">
                         Đánh dấu tất cả đã đọc
                       </button>
                     </div>
@@ -196,9 +200,9 @@ const AdminHeader = () => {
                 className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <img
-                  src="/images/logo.jpg"
+                  src="/images/logoAdmin.png"
                   alt="Admin User"
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200"
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-200"
                 />
                 <div className="hidden lg:block text-left">
                   <p className="text-sm font-medium text-gray-700">Admin User</p>

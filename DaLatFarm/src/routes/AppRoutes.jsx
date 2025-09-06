@@ -6,6 +6,7 @@ import ProductDetail from '../pages/ProductDetail'
 import About from '../pages/About'
 import Contact from '../pages/Contact'
 import Events from '../pages/Events'
+import EventDetail from '../pages/EventDetail'
 import Search from '../pages/Search'
 import NotFound from '../pages/NotFound'
 
@@ -18,6 +19,7 @@ const AppRoutes = () => {
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/events" element={<Events />} />
+      <Route path="/events/:id" element={<EventDetail />} />
       <Route path="/search" element={<Search />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

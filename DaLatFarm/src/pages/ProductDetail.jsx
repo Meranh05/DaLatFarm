@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
@@ -24,20 +24,13 @@ const ProductDetail = () => {
     }
   }, [id, products])
 
-  // Increment views once per navigation with a short cooldown to avoid rapid duplicates
+  // Increment views on each visit to the detail page (guard against React StrictMode double-invoke)
+  const lastIncIdRef = useRef(null)
   useEffect(() => {
     if (!id) return
-    const key = `pv:last:${id}`
-    const now = Date.now()
-    const last = Number(localStorage.getItem(key) || 0)
-    const COOLDOWN_MS = 5000
-    if (now - last < COOLDOWN_MS) return
-    localStorage.setItem(key, String(now))
-    incrementViews(id).catch(() => {
-      // rollback timestamp on failure so a retry can occur
-      const stored = Number(localStorage.getItem(key) || 0)
-      if (stored === now) localStorage.removeItem(key)
-    })
+    if (lastIncIdRef.current === id) return
+    lastIncIdRef.current = id
+    incrementViews(id)
   }, [id, incrementViews])
 
   // Use images[] if available, otherwise fallback to single image

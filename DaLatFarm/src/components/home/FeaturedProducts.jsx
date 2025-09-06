@@ -1,34 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useProducts } from '../../context/ProductContext'
 
 const FeaturedProducts = () => {
-  // Sử dụng data cố định để đảm bảo giống 100% với thiết kế
-  const featuredProducts = [
-    {
-      id: 1,
-      name: 'Bông Atiso sấy khô',
-      image: '/images/AtisoSayKho.jpg',
-      description: 'Bông Atiso sấy khô tự nhiên, giữ nguyên hương vị và dưỡng chất'
-    },
-    {
-      id: 2,
-      name: 'Khoai lang sấy dẻo',
-      image: '/images/KhoaiLangSayDeo.jpg',
-      description: 'Khoai lang sấy dẻo ngọt tự nhiên, không chất bảo quản'
-    },
-    {
-      id: 3,
-      name: 'Dâu tây sấy',
-      image: '/images/DauSay.jpg',
-      description: 'Dâu tây sấy giòn, ngọt tự nhiên, không chất bảo quản'
-    },
-    {
-      id: 4,
-      name: 'Hồng treo gió',
-      image: '/images/HongTreoGio.jpg',
-      description: 'Hồng treo gió truyền thống, giữ nguyên hương vị tự nhiên'
-    }
-  ]
+  const { featuredProducts, topViewedProducts } = useProducts()
+  const items = (featuredProducts && featuredProducts.length > 0)
+    ? featuredProducts.slice(0, 4)
+    : topViewedProducts
 
   return (
     <section className="py-20 bg-white">
@@ -39,12 +17,12 @@ const FeaturedProducts = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {featuredProducts.map((product) => (
+          {items.map((product) => (
             <div key={product.id} className="product-card group border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="relative overflow-hidden">
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={(product.images && product.images[0]) || product.image || '/images/logo.jpg'}
+                  alt={product.name || product.title}
                   className="product-image group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
@@ -52,11 +30,11 @@ const FeaturedProducts = () => {
               <div className="p-6 text-center">
                 <Link to={`/products/${product.id}`}>
                   <h3 className="text-lg font-semibold text-gray-900 hover:text-red-600 transition-colors duration-200 mb-2">
-                    {product.name}
+                    {product.name || product.title}
                   </h3>
                 </Link>
                 <p className="text-sm text-gray-600 line-clamp-2">
-                  {product.description}
+                  {product.shortDescription || product.description || ''}
                 </p>
               </div>
             </div>

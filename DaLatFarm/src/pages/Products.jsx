@@ -176,6 +176,7 @@ const Products = () => {
                               <div className="mb-1"><span className="text-[11px] text-gray-500 uppercase tracking-wide">{product.category}</span></div>
                               <Link to={`/products/${product.id}`}><h3 className="text-base font-semibold text-gray-900 hover:text-orange-600 transition-colors duration-200">{product.name}</h3></Link>
                               <p className="text-gray-600 text-sm mt-1 line-clamp-1">{product.description}</p>
+                              <Link to={`/products/${product.id}`} className="inline-block mt-2 text-sm text-orange-600 hover:text-orange-700 font-medium">Xem chi tiết →</Link>
                             </div>
                           </div>
                         </div>
@@ -194,6 +195,7 @@ const Products = () => {
                           <div className="p-3">
                             <Link to={`/products/${product.id}`}><h3 className="text-base font-semibold text-gray-900 group-hover:text-orange-600 transition-colors duration-200 mb-1 leading-snug">{product.name}</h3></Link>
                             <p className="text-gray-600 text-sm mb-1 line-clamp-1">{product.description}</p>
+                            <Link to={`/products/${product.id}`} className="inline-block mt-1 text-sm text-orange-600 hover:text-orange-700 font-medium">Xem chi tiết →</Link>
                           </div>
                         </div>
                       ))}

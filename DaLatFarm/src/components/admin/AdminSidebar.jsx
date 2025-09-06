@@ -10,8 +10,10 @@ import {
   FileText,
   Activity,
   ChevronRight,
-  Circle
+  Circle,
+  Radio
 } from 'lucide-react'
+import RealTimeStatus from './RealTimeStatus'
 
 const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   const location = useLocation()
@@ -93,6 +95,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
       badge: null,
       description: 'Cấu hình hệ thống'
     },
+   
   ]
 
   const isActive = (href) => {
@@ -103,19 +106,19 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   }
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ease-in-out hidden lg:block`}>
-      <div className="flex flex-col h-full bg-gradient-to-b from-gray-800 to-gray-900">
+    <div className={`${isCollapsed ? 'w-16' : 'w-60'} transition-all duration-300 ease-in-out hidden lg:block sticky top-16 self-start`}>
+      <div className="flex flex-col h-[calc(100vh-4rem)] bg-gradient-to-b from-gray-900 via-[#12151b] to-gray-900">
         {/* Logo */}
-        <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900">
+        <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900/95 border-b border-white/5">
           <Link to="/admin" className="flex items-center space-x-3 w-full">
             <img
-              src="/images/logo.jpg"
-              alt="DA LAT FARM Admin"
-              className="w-8 h-8 rounded-lg object-cover flex-shrink-0"
+              src="/images/logoAdmin.png"
+              alt="DaLat Farm Admin"
+              className="w-10 h-10 rounded-xl object-cover flex-shrink-0 ring-2 ring-blue-300 shadow"
             />
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg font-bold text-white truncate">DA LAT FARM</h1>
+                <h1 className="text-lg font-bold text-white truncate">DaLat Farm</h1>
                 <p className="text-xs text-gray-300 truncate">Admin Panel</p>
               </div>
             )}
@@ -124,7 +127,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
 
         {/* Navigation */}
         <div className="flex-1 flex flex-col overflow-y-auto">
-          <nav className="flex-1 px-2 py-4 space-y-1">
+          <nav className="flex-1 px-2.5 py-3 space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon
               const isActiveItem = isActive(item.href)
@@ -133,10 +136,10 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group flex items-center px-2.5 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActiveItem
-                      ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white hover:transform hover:scale-105'
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md scale-[1.02]'
+                      : 'text-gray-300 hover:bg-gray-800/80 hover:text-white hover:scale-[1.02]'
                   }`}
                   title={isCollapsed ? item.description : ''}
                 >
@@ -160,7 +163,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
                     <>
                       <span className="ml-3 flex-1">{item.name}</span>
                       {item.badge !== null && item.badge > 0 && (
-                        <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+                        <span className="ml-auto bg-red-500/90 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow">
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
@@ -177,14 +180,28 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
           </nav>
         </div>
 
+        {/* Embedded Real-time widget when expanded */}
+        {/* Link to Real-time page instead of embedding widget to avoid layout issues at high zoom */}
+        {!isCollapsed && (
+          <div className="px-3 pb-2">
+            <Link to="/admin/realtime" className="block rounded-xl bg-gray-800/70 border border-white/5 p-3 hover:bg-gray-800/90 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium text-gray-200">Trạng thái Real-time</div>
+                <Radio className="w-4 h-4 text-blue-400" />
+              </div>
+              <div className="text-xs text-gray-400 mt-1">Nhấn để xem chi tiết</div>
+            </Link>
+          </div>
+        )}
+
         {/* User Info */}
-        <div className="flex-shrink-0 flex bg-gray-700 p-4">
+        <div className="flex-shrink-0 flex bg-gray-800/95 p-4 border-t border-white/5">
           <div className="flex items-center w-full">
             <div className="relative">
               <img
-                src="/images/logo.jpg"
+                src="/images/logoAdmin.png"
                 alt="Admin User"
-                className="inline-block h-9 w-9 rounded-full ring-2 ring-gray-500"
+                className="inline-block h-10 w-10 rounded-full ring-2 ring-blue-300 shadow"
               />
               {/* Online status indicator */}
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-700"></div>

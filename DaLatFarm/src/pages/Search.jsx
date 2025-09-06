@@ -3,10 +3,13 @@ import { useSearchParams } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import ProductList from '../components/product/ProductList'
+import { useProducts } from '../context/ProductContext'
+import { productsAPI } from '../services/apiService'
 import { Search as SearchIcon } from 'lucide-react'
 
 const Search = () => {
   const [searchParams] = useSearchParams()
+  const { products: allProducts, categories } = useProducts()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState('grid')
@@ -14,47 +17,32 @@ const Search = () => {
   const query = searchParams.get('q') || ''
 
   useEffect(() => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      const mockProducts = [
-        {
-          id: 1,
-          name: 'Bông Atiso sấy khô',
-          price: 150000,
-          originalPrice: 180000,
-          image: '/images/products/dried-artichoke.jpg',
-          rating: 4.8,
-          reviews: 124,
-          category: 'Trà & Thảo mộc',
-          slug: 'bong-atiso-say-kho',
-          description: 'Atiso sấy khô tự nhiên, giữ nguyên hương vị và dưỡng chất'
-        },
-        {
-          id: 2,
-          name: 'Khoai lang sấy dẻo',
-          price: 85000,
-          originalPrice: 100000,
-          image: '/images/products/dried-sweet-potato.jpg',
-          rating: 4.6,
-          reviews: 89,
-          category: 'Trái cây sấy',
-          slug: 'khoai-lang-say-deo',
-          description: 'Khoai lang sấy dẻo ngọt tự nhiên, không chất bảo quản'
+    let isMounted = true
+    const run = async () => {
+      setLoading(true)
+      const q = query.trim().toLowerCase()
+      let source = allProducts || []
+      if (!source || source.length === 0) {
+        try {
+          source = await productsAPI.getAll()
+        } catch (_) {
+          source = []
         }
-      ]
-
-      // Filter products based on search query
-      const filteredProducts = mockProducts.filter(product =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.description.toLowerCase().includes(query.toLowerCase()) ||
-        product.category.toLowerCase().includes(query.toLowerCase())
-      )
-
-      setProducts(filteredProducts)
-      setLoading(false)
-    }, 1000)
-  }, [query])
+      }
+      const result = (source).filter(p => {
+        const name = (p.name || '').toLowerCase()
+        const desc = (p.description || p.shortDescription || '').toLowerCase()
+        const cat = (p.category || '').toLowerCase()
+        return name.includes(q) || desc.includes(q) || cat.includes(q)
+      })
+      if (isMounted) {
+        setProducts(result)
+        setLoading(false)
+      }
+    }
+    run()
+    return () => { isMounted = false }
+  }, [query, allProducts])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,12 +89,12 @@ const Search = () => {
                 Thử tìm kiếm với từ khóa khác hoặc duyệt qua các danh mục sản phẩm
               </p>
               <div className="space-x-4">
-                <button className="btn-primary bg-red-600 hover:bg-red-700">
+                <a href="/products" className="btn-primary bg-red-600 hover:bg-red-700 inline-block px-6 py-3 rounded-lg text-white">
                   Xem tất cả sản phẩm
-                </button>
-                <button className="btn-outline border-red-600 text-red-600 hover:bg-red-600 hover:text-white">
+                </a>
+                <a href="/search" className="btn-outline border-red-600 text-red-600 hover:bg-red-600 hover:text-white inline-block px-6 py-3 rounded-lg">
                   Tìm kiếm khác
-                </button>
+                </a>
               </div>
             </div>
           ) : (

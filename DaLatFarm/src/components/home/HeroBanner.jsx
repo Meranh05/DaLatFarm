@@ -14,36 +14,6 @@ const HeroBanner = () => {
         <div className="absolute inset-0 bg-black bg-opacity-10"></div>
       </div>
 
-      {/* 3 Bông Atiso bên phải - Vị trí tự nhiên hơn */}
-      <div className="absolute top-12 right-6 md:right-12 z-20">
-        <div className="relative">
-          {/* Atiso 1 - Nguyên vẹn (lớn nhất, dưới cùng) */}
-          <img
-            src="/images/backgroundAtiso.png"
-            alt="Atiso Đà Lạt"
-            className="w-40 h-40 md:w-48 md:h-48 object-contain drop-shadow-lg"
-          />
-          
-          {/* Atiso 2 - Cắt đôi (chồng lên, hơi chếch trái) */}
-          <div className="absolute -top-8 -left-8">
-            <img
-              src="/images/backgroundAtiso.png"
-              alt="Atiso cắt đôi"
-              className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-lg"
-            />
-          </div>
-          
-          {/* Atiso 3 - Nguyên vẹn (nhỏ nhất, trên cùng, hơi chếch phải) */}
-          <div className="absolute top-2 -right-8">
-            <img
-              src="/images/backgroundAtiso.png"
-              alt="Atiso Đà Lạt"
-              className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-lg"
-            />
-          </div>
-        </div>
-      </div>
-
       {/* Đường cắt chéo lượn sóng ở dưới - Vector hoàn toàn tự nhiên */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg

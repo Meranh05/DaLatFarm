@@ -57,9 +57,32 @@ export const ProductProvider = ({ children }) => {
   }, [])
 
   const incrementViews = useCallback(async (id) => {
-    // optional: keep Firestore view increment
-    await productsAPI.incrementViews(id)
+    // Count every visit to the product detail page
+    try {
+      await productsAPI.incrementViews(id)
+    } catch (_) {
+      // ignore failures to avoid blocking UI
+    }
   }, [])
+
+  function getStableDeviceId() {
+    const key = 'pv:deviceId'
+    let id = localStorage.getItem(key)
+    if (id) return id
+    const nav = typeof navigator !== 'undefined' ? navigator : {}
+    const scr = typeof screen !== 'undefined' ? screen : { width: 0, height: 0, colorDepth: 0, pixelDepth: 0 }
+    const tz = (Intl && Intl.DateTimeFormat && Intl.DateTimeFormat().resolvedOptions().timeZone) || ''
+    const raw = [nav.userAgent, nav.language, nav.platform, tz, scr.width, scr.height, scr.colorDepth, scr.pixelDepth].join('|')
+    // Lightweight hash (FNV-1a like)
+    let hash = 2166136261
+    for (let i = 0; i < raw.length; i++) {
+      hash ^= raw.charCodeAt(i)
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24)
+    }
+    id = 'dv_' + (hash >>> 0).toString(16)
+    localStorage.setItem(key, id)
+    return id
+  }
 
   // Category mutations are disabled (fixed list)
   const addCategory = useCallback(async () => DEFAULT_CATEGORIES, [])
@@ -92,6 +115,14 @@ export const ProductProvider = ({ children }) => {
 
   const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 6), [products])
 
+  // Top 4 most viewed products for homepage highlight
+  const topViewedProducts = useMemo(() => {
+    const copied = Array.isArray(products) ? [...products] : []
+    return copied
+      .sort((a, b) => (b?.views || 0) - (a?.views || 0))
+      .slice(0, 4)
+  }, [products])
+
   const productsByCategory = useMemo(() => {
     const grouped = {}
     categories.forEach(cat => { grouped[cat.name] = products.filter(p => p.category === cat.name) })
@@ -104,6 +135,7 @@ export const ProductProvider = ({ children }) => {
     loading,
     error,
     featuredProducts,
+    topViewedProducts,
     productsByCategory,
     loadProducts,
     loadCategories,
@@ -115,7 +147,7 @@ export const ProductProvider = ({ children }) => {
     addCategory,
     updateCategory,
     deleteCategory
-  }), [products, categories, loading, error, featuredProducts, productsByCategory, loadProducts, loadCategories, resetCategories, addProduct, updateProduct, deleteProduct, incrementViews, addCategory, updateCategory, deleteCategory])
+  }), [products, categories, loading, error, featuredProducts, topViewedProducts, productsByCategory, loadProducts, loadCategories, resetCategories, addProduct, updateProduct, deleteProduct, incrementViews, addCategory, updateCategory, deleteCategory])
 
   return (
     <ProductContext.Provider value={contextValue}>

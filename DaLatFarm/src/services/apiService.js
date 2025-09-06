@@ -11,7 +11,9 @@ import {
   where,
   orderBy,
   writeBatch,
-  increment
+  increment,
+  runTransaction,
+  serverTimestamp
 } from 'firebase/firestore'
 import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
 
@@ -116,14 +118,21 @@ export const productsAPI = {
       createdAt: data.createdAt || Date.now(),
       updatedAt: Date.now()
     })
+    // Log activity & notification
+    try {
+      await activitiesAPI.log({ type: 'product:create', refId: res.id, title: data.name || 'Sản phẩm mới', message: 'Đã thêm sản phẩm mới' })
+      await notificationsAPI.push({ type: 'product', title: 'Sản phẩm mới', message: data.name || 'Sản phẩm mới được thêm' })
+    } catch (_) {}
     return { id: res.id, ...data }
   },
   update: async (id, data) => {
     await updateDoc(doc(db, 'products', id), { ...data, updatedAt: Date.now() })
+    try { await activitiesAPI.log({ type: 'product:update', refId: id, title: data.name || 'Cập nhật sản phẩm', message: 'Đã cập nhật sản phẩm' }) } catch (_) {}
     return { id, ...data }
   },
   delete: async (id) => {
     await deleteDoc(doc(db, 'products', id))
+    try { await activitiesAPI.log({ type: 'product:delete', refId: id, title: 'Xóa sản phẩm', message: 'Đã xóa một sản phẩm' }) } catch (_) {}
     return { id }
   },
   incrementViews: async (id) => {
@@ -131,12 +140,52 @@ export const productsAPI = {
     await updateDoc(refDoc, { views: increment(1) })
     return { id }
   },
+  // Register view once per device per day using a transaction + subcollection guard
+  registerViewOncePerDay: async (id, deviceId) => {
+    if (!id || !deviceId) return { created: false }
+    const dayStr = new Date().toISOString().slice(0, 10) // YYYY-MM-DD (UTC)
+    const productRef = doc(db, 'products', id)
+    const viewDocRef = doc(collection(db, 'products', id, 'views'), `${dayStr}_${deviceId}`)
+    const result = await runTransaction(db, async (tx) => {
+      const existing = await tx.get(viewDocRef)
+      if (existing.exists()) {
+        return { created: false }
+      }
+      tx.set(viewDocRef, { deviceId, day: dayStr, createdAt: serverTimestamp() })
+      tx.update(productRef, { views: increment(1) })
+      return { created: true }
+    })
+    return result
+  },
   clearAll: async () => {
     const snap = await getDocs(collection(db, 'products'))
     const batch = writeBatch(db)
     snap.docs.forEach(d => batch.delete(d.ref))
     await batch.commit()
     return { deleted: snap.docs.length }
+  },
+  resetAllViews: async () => {
+    const snap = await getDocs(collection(db, 'products'))
+    let batch = writeBatch(db)
+    let ops = 0
+    for (const d of snap.docs) {
+      // Reset numeric counter
+      batch.update(d.ref, { views: 0, updatedAt: Date.now() })
+      ops++
+      // Clear per-day device guard docs so counters work again after reset
+      const guardsSnap = await getDocs(collection(db, 'products', d.id, 'views'))
+      for (const g of guardsSnap.docs) {
+        batch.delete(g.ref)
+        ops++
+        if (ops >= 450) {
+          await batch.commit()
+          batch = writeBatch(db)
+          ops = 0
+        }
+      }
+    }
+    if (ops > 0) await batch.commit()
+    return { updated: snap.docs.length }
   }
 }
 
@@ -148,17 +197,25 @@ export const eventsAPI = {
   },
   create: async (data) => {
     const res = await addDoc(collection(db, 'events'), { ...data, createdAt: Date.now(), updatedAt: Date.now() })
+    try {
+      await activitiesAPI.log({ type: 'event:create', refId: res.id, title: data.name || data.title || 'Sự kiện mới', message: 'Đã thêm sự kiện' })
+      await notificationsAPI.push({ type: 'event', title: 'Sự kiện mới', message: data.name || data.title || 'Sự kiện mới được thêm' })
+    } catch (_) {}
     return { id: res.id, ...data }
   },
   update: async (id, data) => {
     await updateDoc(doc(db, 'events', id), { ...data, updatedAt: Date.now() })
+    try { await activitiesAPI.log({ type: 'event:update', refId: id, title: data.name || data.title || 'Cập nhật sự kiện', message: 'Đã cập nhật sự kiện' }) } catch (_) {}
     return { id, ...data }
   },
   delete: async (id) => {
     await deleteDoc(doc(db, 'events', id))
+    try { await activitiesAPI.log({ type: 'event:delete', refId: id, title: 'Xóa sự kiện', message: 'Đã xóa một sự kiện' }) } catch (_) {}
     return { id }
   }
 }
+
+// News API using Firestore
 
 // Upload API: Prefer Cloudinary if configured; else use Firebase Storage
 export const uploadAPI = {
@@ -218,10 +275,96 @@ export const healthAPI = {
   check: async () => true
 }
 
+// Site-wide stats API
+export const statsAPI = {
+  trackDailyVisit: async (deviceId) => {
+    if (!deviceId) return { created: false }
+    const dayStr = new Date().toISOString().slice(0, 10)
+    const statsRef = doc(db, 'stats', 'daily')
+    const visitRef = doc(collection(db, 'stats', 'daily', dayStr, 'visits'), deviceId)
+    return await runTransaction(db, async (tx) => {
+      const exist = await tx.get(visitRef)
+      if (exist.exists()) return { created: false }
+      tx.set(visitRef, { deviceId, createdAt: serverTimestamp() })
+      const current = await tx.get(statsRef)
+      if (current.exists()) {
+        const data = current.data() || {}
+        const prev = Number(data[dayStr] || 0)
+        tx.update(statsRef, { [dayStr]: prev + 1, updatedAt: serverTimestamp() })
+      } else {
+        tx.set(statsRef, { [dayStr]: 1, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+      }
+      return { created: true }
+    })
+  }
+  ,
+  getTodayVisitCount: async () => {
+    const dayStr = new Date().toISOString().slice(0, 10)
+    const statsRef = doc(db, 'stats', 'daily')
+    const snap = await getDoc(statsRef)
+    if (!snap.exists()) return 0
+    const data = snap.data() || {}
+    return Number(data[dayStr] || 0)
+  },
+  incrementVisit: async () => {
+    const dayStr = new Date().toISOString().slice(0, 10)
+    const statsRef = doc(db, 'stats', 'daily')
+    await runTransaction(db, async (tx) => {
+      const cur = await tx.get(statsRef)
+      if (cur.exists()) {
+        const data = cur.data() || {}
+        const prev = Number(data[dayStr] || 0)
+        tx.update(statsRef, { [dayStr]: prev + 1, updatedAt: serverTimestamp() })
+      } else {
+        tx.set(statsRef, { [dayStr]: 1, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+      }
+    })
+    return { ok: true }
+  }
+}
+
+// Admin notifications API
+export const notificationsAPI = {
+  push: async ({ type = 'info', title = 'Thông báo', message = '' }) => {
+    const col = collection(db, 'notifications')
+    await addDoc(col, { type, title, message, read: false, createdAt: Date.now() })
+  },
+  getAll: async () => {
+    const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  },
+  markAsRead: async (id) => {
+    await updateDoc(doc(db, 'notifications', id), { read: true })
+  },
+  markAllAsRead: async () => {
+    const snap = await getDocs(collection(db, 'notifications'))
+    const batch = writeBatch(db)
+    snap.docs.forEach(d => batch.update(d.ref, { read: true }))
+    await batch.commit()
+  }
+}
+
+// Activities API
+export const activitiesAPI = {
+  log: async ({ type, refId, title, message }) => {
+    const col = collection(db, 'activities')
+    await addDoc(col, { type, refId: refId || null, title, message, createdAt: Date.now() })
+  },
+  getRecent: async (limitCount = 50) => {
+    const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  }
+}
+
 export default {
   categoriesAPI,
   productsAPI,
   eventsAPI,
   uploadAPI,
-  healthAPI
+  healthAPI,
+  statsAPI,
+  notificationsAPI,
+  activitiesAPI
 }

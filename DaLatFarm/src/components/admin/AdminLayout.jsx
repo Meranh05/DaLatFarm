@@ -20,16 +20,13 @@ const AdminLayout = ({ children }) => {
         
         {/* Main Content */}
         <div className={`flex-1 transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-60'
         }`}>
-          <div className="p-6">
+          <div className="p-3 lg:p-5 scale-[0.95] origin-top-left text-[13px] md:text-[14px] max-w-[1400px] mx-auto">
             {children}
           </div>
         </div>
       </div>
-
-      {/* Real-time Status */}
-      <RealTimeStatus />
     </div>
   )
 }

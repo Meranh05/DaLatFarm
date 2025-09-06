@@ -65,8 +65,7 @@ const RealTimeStatus = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[280px]">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-gray-900">Trạng thái Real-time</h3>
@@ -125,7 +124,6 @@ const RealTimeStatus = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }

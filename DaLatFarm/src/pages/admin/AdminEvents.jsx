@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { 
   Plus, 
   Search, 
@@ -10,45 +11,50 @@ import {
   Calendar,
   MapPin,
   Users,
-  Clock
+  Clock,
+  X
 } from 'lucide-react'
+import { eventsAPI, uploadAPI } from '../../services/apiService'
+import { db } from '../../config/firebase'
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
 
 const AdminEvents = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('all')
+  const [loading, setLoading] = useState(true)
+  const [events, setEvents] = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [imageFile, setImageFile] = useState(null)
+  const [form, setForm] = useState({
+    name: '',
+    date: '',
+    time: '',
+    location: '',
+    attendees: 0,
+    status: 'upcoming',
+    category: '',
+    image: '',
+    description: ''
+  })
 
-  const events = [
-    {
-      id: 1,
-      name: 'Lễ hội hoa Đà Lạt 2024',
-      date: '2024-02-15',
-      location: 'Công viên Yersin, Đà Lạt',
-      attendees: 1500,
-      status: 'upcoming',
-      image: '/images/DoiChe.jpg',
-      description: 'Lễ hội hoa lớn nhất năm tại Đà Lạt'
-    },
-    {
-      id: 2,
-      name: 'Triển lãm nông sản sạch',
-      date: '2024-01-20',
-      location: 'Trung tâm triển lãm Đà Lạt',
-      attendees: 800,
-      status: 'completed',
-      image: '/images/DoiChe.jpg',
-      description: 'Triển lãm các sản phẩm nông sản sạch'
-    },
-    {
-      id: 3,
-      name: 'Workshop trồng rau sạch',
-      date: '2024-03-10',
-      location: 'Nông trại DA LAT FARM',
-      attendees: 50,
-      status: 'upcoming',
-      image: '/images/DoiChe.jpg',
-      description: 'Hướng dẫn kỹ thuật trồng rau sạch'
+  const loadEvents = async () => {
+    setLoading(true)
+    try {
+      const list = await eventsAPI.getAll()
+      setEvents(list)
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
+
+  useEffect(() => {
+    const unsub = onSnapshot(query(collection(db, 'events'), orderBy('date', 'asc')), (snap) => {
+      setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
+    })
+    return () => unsub()
+  }, [])
 
   const statuses = [
     { value: 'all', label: 'Tất cả trạng thái' },
@@ -90,6 +96,66 @@ const AdminEvents = () => {
     }
   }
 
+  const openCreate = () => {
+    setForm({ name: '', date: '', time: '', location: '', attendees: 0, status: 'upcoming', category: '', image: '', description: '' })
+    setImageFile(null)
+    setEditingId(null)
+    setShowForm(true)
+  }
+
+  const openEdit = (e) => {
+    setForm({
+      name: e.name || '',
+      date: (typeof e.date === 'number') ? new Date(e.date).toISOString().slice(0,10) : (e.date || ''),
+      time: e.time || '',
+      location: e.location || '',
+      attendees: e.attendees || 0,
+      status: e.status || 'upcoming',
+      category: e.category || '',
+      image: e.image || '',
+      description: e.description || ''
+    })
+    setImageFile(null)
+    setEditingId(e.id)
+    setShowForm(true)
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    let imageUrl = form.image
+    if (imageFile) {
+      const { imageUrl: url } = await uploadAPI.uploadImage(imageFile)
+      imageUrl = url
+    }
+    const payload = {
+      ...form,
+      attendees: Number(form.attendees) || 0,
+      date: form.date,
+      image: imageUrl
+    }
+    if (editingId) {
+      await eventsAPI.update(editingId, payload)
+    } else {
+      await eventsAPI.create(payload)
+    }
+    setShowForm(false)
+    await loadEvents()
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('Xóa sự kiện này?')) return
+    await eventsAPI.delete(id)
+    await loadEvents()
+  }
+
+  // Prevent background scroll when modal is open
+  useEffect(() => {
+    if (!showForm) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = original }
+  }, [showForm])
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -100,7 +166,7 @@ const AdminEvents = () => {
               <h1 className="text-3xl font-bold text-gray-900">Quản lý sự kiện</h1>
               <p className="text-gray-600 mt-2">Quản lý các sự kiện và hoạt động của DA LAT FARM</p>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+            <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
               <Plus className="w-4 h-4" />
               <span>Thêm sự kiện</span>
             </button>
@@ -176,14 +242,14 @@ const AdminEvents = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="text-green-600 hover:text-green-900 p-1 rounded">
+                    <button onClick={() => openEdit(event)} className="text-green-600 hover:text-green-900 p-1 rounded">
                       <Edit className="w-4 h-4" />
                     </button>
-                    <button className="text-red-600 hover:text-red-900 p-1 rounded">
+                    <button onClick={() => handleDelete(event.id)} className="text-red-600 hover:text-red-900 p-1 rounded">
                       <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
+                      <Eye className="w-4 h-4" />
                     </button>
                   </div>
                   <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
@@ -202,6 +268,71 @@ const AdminEvents = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-2">Không có sự kiện nào</h3>
             <p className="text-gray-500">Không tìm thấy sự kiện nào phù hợp với bộ lọc của bạn.</p>
           </div>
+        )}
+
+        {/* Modal Form */}
+        {showForm && createPortal(
+          <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold">{editingId ? 'Sửa sự kiện' : 'Thêm sự kiện'}</h3>
+                <button onClick={() => setShowForm(false)} className="text-gray-500 hover:text-gray-700"><X className="w-5 h-5" /></button>
+              </div>
+              <form onSubmit={handleSave} className="p-6 space-y-6">
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">Tên sự kiện</label>
+                  <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" required />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-1">
+                    <label className="block text-sm text-gray-700 mb-1">Ngày</label>
+                    <input type="date" value={form.date} onChange={e=>setForm({...form,date:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" required />
+                  </div>
+                  <div className="md:col-span-1">
+                    <label className="block text-sm text-gray-700 mb-1">Giờ</label>
+                    <input type="text" placeholder="08:00 - 18:00" value={form.time} onChange={e=>setForm({...form,time:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                  </div>
+                  <div className="md:col-span-1">
+                    <label className="block text-sm text-gray-700 mb-1">Trạng thái</label>
+                    <select value={form.status} onChange={e=>setForm({...form,status:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                      <option value="upcoming">Sắp diễn ra</option>
+                      <option value="ongoing">Đang diễn ra</option>
+                      <option value="completed">Đã hoàn thành</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Địa điểm</label>
+                    <input value={form.location} onChange={e=>setForm({...form,location:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Danh mục</label>
+                    <input value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Người tham gia</label>
+                    <input type="number" min="0" value={form.attendees} onChange={e=>setForm({...form,attendees:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">Ảnh (tuỳ chọn)</label>
+                    <input type="file" accept="image/*" onChange={e=>setImageFile(e.target.files?.[0]||null)} className="w-full" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">Mô tả</label>
+                  <textarea rows="3" value={form.description} onChange={e=>setForm({...form,description:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
+                </div>
+                <div className="flex justify-end space-x-2 pt-6 border-t border-gray-200">
+                  <button type="button" onClick={()=>setShowForm(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Hủy</button>
+                  <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-lg hover:bg-orange-700">Lưu</button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>

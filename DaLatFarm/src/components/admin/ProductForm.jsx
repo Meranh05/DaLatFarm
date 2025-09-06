@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Upload, Image as ImageIcon } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import { uploadAPI } from '../../services/apiService'
@@ -55,6 +56,16 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
       resetForm()
     }
   }, [product, isEditing])
+
+  // Prevent background scroll when modal open
+  useEffect(() => {
+    if (!isOpen) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [isOpen])
 
   const resetForm = () => {
     setFormData({
@@ -155,8 +166,8 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
 
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">
@@ -301,7 +312,8 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
