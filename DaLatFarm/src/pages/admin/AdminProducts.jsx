@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Filter, Plus, Edit, Trash, Eye, Grid, List, Download, RefreshCw } from 'lucide-react'
+import { Search, Filter, Plus, Edit, Trash, Eye, Grid, List, Download, RefreshCw, MoreHorizontal, EyeOff } from 'lucide-react'
 import ProductForm from '../../components/admin/ProductForm'
 import { useProducts } from '../../context/ProductContext'
 import { productsAPI } from '../../services/apiService'
@@ -145,11 +145,13 @@ const AdminProducts = () => {
   }
 
   const getStatusText = (product) => {
+    if (product.hidden) return 'Đã ẩn'
     if (product.featured) return 'Nổi bật'
     return 'Bình thường'
   }
 
   const getStatusColor = (product) => {
+    if (product.hidden) return 'bg-gray-200 text-gray-600'
     if (product.featured) return 'bg-orange-100 text-orange-800'
     return 'bg-gray-100 text-gray-800'
   }
@@ -304,31 +306,7 @@ const AdminProducts = () => {
 
           {/* Right side - Actions */}
           <div className="flex items-center space-x-4">
-            {/* View Mode */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'table'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Grid className="w-4 h-4 inline mr-1" />
-                Bảng
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <List className="w-4 h-4 inline mr-1" />
-                Danh sách
-              </button>
-            </div>
+
 
             {/* Export */}
             <button
@@ -476,19 +454,23 @@ const AdminProducts = () => {
                       {new Date(product.createdAt || Date.now()).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => setEditingProduct(product)}
-                          className="text-indigo-600 hover:text-indigo-900 p-1"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
-                        >
-                          <Trash className="w-4 h-4" />
-                        </button>
+                      <div className="relative inline-block text-left">
+                        <details className="group">
+                          <summary className="list-none cursor-pointer inline-flex items-center gap-1 px-2 py-1 rounded-md hover:bg-gray-100">
+                            <MoreHorizontal className="w-5 h-5 text-gray-600" />
+                          </summary>
+                          <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10">
+                            <button onClick={() => setEditingProduct(product)} className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                              <Edit className="w-4 h-4" /> Chỉnh sửa
+                            </button>
+                            <button onClick={async () => { await productsAPI.setHidden(product.id, !product.hidden); await loadProducts() }} className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
+                              <EyeOff className="w-4 h-4" /> {product.hidden ? 'Hiện sản phẩm' : 'Ẩn sản phẩm'}
+                            </button>
+                            <button onClick={() => handleDeleteProduct(product.id)} className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 text-red-600 flex items-center gap-2">
+                              <Trash className="w-4 h-4" /> Xóa
+                            </button>
+                          </div>
+                        </details>
                       </div>
                     </td>
                   </tr>

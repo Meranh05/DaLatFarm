@@ -82,7 +82,7 @@ const AdminUsers = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
-              <p className="text-gray-600 mt-2">Quản lý tài khoản người dùng của DA LAT FARM</p>
+              <p className="text-gray-600 mt-2">Quản lý tài khoản người dùng của DaLat Farm</p>
             </div>
             <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
               <Plus className="w-4 h-4" />

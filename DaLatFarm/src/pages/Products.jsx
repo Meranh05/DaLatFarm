@@ -25,7 +25,8 @@ const Products = () => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const notHidden = !product.hidden
+    return notHidden && matchesSearch && matchesCategory
   })
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {

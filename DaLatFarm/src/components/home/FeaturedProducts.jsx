@@ -5,8 +5,8 @@ import { useProducts } from '../../context/ProductContext'
 const FeaturedProducts = () => {
   const { featuredProducts, topViewedProducts } = useProducts()
   const items = (featuredProducts && featuredProducts.length > 0)
-    ? featuredProducts.slice(0, 4)
-    : topViewedProducts
+    ? featuredProducts.filter(p => !p.hidden).slice(0, 4)
+    : topViewedProducts.filter(p => !p.hidden)
 
   return (
     <section className="py-20 bg-white">
@@ -21,7 +21,7 @@ const FeaturedProducts = () => {
             <div key={product.id} className="product-card group border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
               <div className="relative overflow-hidden">
                 <img
-                  src={(product.images && product.images[0]) || product.image || '/images/logo.jpg'}
+                  src={(product.images && product.images[0]) || product.image || '/images/logo.png'}
                   alt={product.name || product.title}
                   className="product-image group-hover:scale-105 transition-transform duration-300"
                 />

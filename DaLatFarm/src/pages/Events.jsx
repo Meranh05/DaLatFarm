@@ -35,8 +35,9 @@ const Events = () => {
 
   const filtered = useMemo(() => {
     return events.filter(e => {
+      const notHidden = !e.hidden
       const matchStatus = status === 'all' || e.status === status
-      return matchStatus
+      return notHidden && matchStatus
     })
   }, [events, status])
 

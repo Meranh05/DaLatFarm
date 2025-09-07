@@ -6,7 +6,7 @@ import {
   Filter, 
   Edit, 
   Trash2, 
-  Eye,
+  Eye, EyeOff,
   MoreHorizontal,
   Calendar,
   MapPin,
@@ -26,6 +26,10 @@ const AdminEvents = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [errorMsg, setErrorMsg] = useState('')
   const [form, setForm] = useState({
     name: '',
     date: '',
@@ -123,9 +127,16 @@ const AdminEvents = () => {
   const handleSave = async (e) => {
     e.preventDefault()
     let imageUrl = form.image
-    if (imageFile) {
-      const { imageUrl: url } = await uploadAPI.uploadImage(imageFile)
-      imageUrl = url
+    try {
+      if (imageFile) {
+        setUploading(true)
+        const { imageUrl: url } = await uploadAPI.uploadImage(imageFile, (pct) => setProgress(pct))
+        imageUrl = url
+      }
+    } catch (err) {
+      setErrorMsg('Tải ảnh thất bại. Vui lòng chọn ảnh khác hoặc thử lại sau.')
+      setUploading(false)
+      return
     }
     const payload = {
       ...form,
@@ -139,7 +150,21 @@ const AdminEvents = () => {
       await eventsAPI.create(payload)
     }
     setShowForm(false)
+    setUploading(false)
+    setProgress(0)
+    setErrorMsg('')
     await loadEvents()
+  }
+
+  const onPickImage = (file) => {
+    setErrorMsg('')
+    if (!file) { setImageFile(null); setImagePreview(''); return }
+    if (!file.type.startsWith('image/')) { setErrorMsg('Vui lòng chọn tệp ảnh.'); return }
+    if (file.size > 5 * 1024 * 1024) { setErrorMsg('Ảnh quá lớn (>5MB).'); return }
+    setImageFile(file)
+    const r = new FileReader()
+    r.onload = () => setImagePreview(r.result)
+    r.readAsDataURL(file)
   }
 
   const handleDelete = async (id) => {
@@ -164,7 +189,7 @@ const AdminEvents = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Quản lý sự kiện</h1>
-              <p className="text-gray-600 mt-2">Quản lý các sự kiện và hoạt động của DA LAT FARM</p>
+              <p className="text-gray-600 mt-2">Quản lý các sự kiện và hoạt động của Dalat Farm</p>
             </div>
             <button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
               <Plus className="w-4 h-4" />
@@ -245,16 +270,15 @@ const AdminEvents = () => {
                     <button onClick={() => openEdit(event)} className="text-green-600 hover:text-green-900 p-1 rounded">
                       <Edit className="w-4 h-4" />
                     </button>
+                    {/* Toggle hiển thị bằng icon con mắt */}
+                    <button onClick={async (e)=>{e.preventDefault(); await eventsAPI.setHidden(event.id, !event.hidden)}} className="text-blue-600 hover:text-blue-900 p-1 rounded">
+                      {event.hidden ? (<EyeOff className="w-4 h-4" />) : (<Eye className="w-4 h-4" />)}
+                    </button>
                     <button onClick={() => handleDelete(event.id)} className="text-red-600 hover:text-red-900 p-1 rounded">
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
-                      <Eye className="w-4 h-4" />
-                    </button>
                   </div>
-                  <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </button>
+                  <span className={`px-2 py-1 text-xs rounded-full ${event.hidden? 'bg-gray-200 text-gray-600':'bg-green-50 text-green-700'}`}>{event.hidden? 'Đã ẩn':'Đang hiển thị'}</span>
                 </div>
               </div>
             </div>
@@ -318,7 +342,16 @@ const AdminEvents = () => {
                   </div>
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">Ảnh (tuỳ chọn)</label>
-                    <input type="file" accept="image/*" onChange={e=>setImageFile(e.target.files?.[0]||null)} className="w-full" />
+                    <input type="file" accept="image/*" onChange={e=>onPickImage(e.target.files?.[0]||null)} className="w-full" />
+                    {(imagePreview || form.image) && (
+                      <img src={imagePreview || form.image} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
+                    )}
+                    {uploading && (
+                      <div className="mt-2 text-xs text-gray-600">Đang tải ảnh... {progress}%</div>
+                    )}
+                    {errorMsg && (
+                      <div className="mt-2 text-xs text-red-600">{errorMsg}</div>
+                    )}
                   </div>
                 </div>
                 <div>

@@ -130,6 +130,11 @@ export const productsAPI = {
     try { await activitiesAPI.log({ type: 'product:update', refId: id, title: data.name || 'Cập nhật sản phẩm', message: 'Đã cập nhật sản phẩm' }) } catch (_) {}
     return { id, ...data }
   },
+  setHidden: async (id, hidden) => {
+    await updateDoc(doc(db, 'products', id), { hidden: !!hidden, updatedAt: Date.now() })
+    try { await activitiesAPI.log({ type: hidden ? 'product:hide' : 'product:unhide', refId: id, title: 'Ẩn/Hiện sản phẩm', message: hidden ? 'Đã ẩn sản phẩm' : 'Đã hiện sản phẩm' }) } catch (_) {}
+    return { id, hidden: !!hidden }
+  },
   delete: async (id) => {
     await deleteDoc(doc(db, 'products', id))
     try { await activitiesAPI.log({ type: 'product:delete', refId: id, title: 'Xóa sản phẩm', message: 'Đã xóa một sản phẩm' }) } catch (_) {}
@@ -207,6 +212,11 @@ export const eventsAPI = {
     await updateDoc(doc(db, 'events', id), { ...data, updatedAt: Date.now() })
     try { await activitiesAPI.log({ type: 'event:update', refId: id, title: data.name || data.title || 'Cập nhật sự kiện', message: 'Đã cập nhật sự kiện' }) } catch (_) {}
     return { id, ...data }
+  },
+  setHidden: async (id, hidden) => {
+    await updateDoc(doc(db, 'events', id), { hidden: !!hidden, updatedAt: Date.now() })
+    try { await activitiesAPI.log({ type: hidden ? 'event:hide' : 'event:unhide', refId: id, title: 'Ẩn/Hiện sự kiện', message: hidden ? 'Đã ẩn sự kiện' : 'Đã hiện sự kiện' }) } catch (_) {}
+    return { id, hidden: !!hidden }
   },
   delete: async (id) => {
     await deleteDoc(doc(db, 'events', id))
