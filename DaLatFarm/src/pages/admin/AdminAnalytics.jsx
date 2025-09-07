@@ -13,6 +13,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 import { useProducts } from '../../context/ProductContext'
+import { eventsAPI, statsAPI } from '../../services/apiService'
 
 const AdminAnalytics = () => {
   const { products } = useProducts()
@@ -76,6 +77,32 @@ const AdminAnalytics = () => {
       const currentProducts = products.filter(p => within(p.createdAt || 0, currentRange))
       const prevProducts = products.filter(p => within(p.createdAt || 0, prevRange))
 
+      // Events by range (from Firestore)
+      const events = await eventsAPI.getAll().catch(() => [])
+      const totalEvents = events.length
+      const currentEvents = events.filter(e => within(e.date || e.createdAt || 0, currentRange))
+      const prevEvents = events.filter(e => within(e.date || e.createdAt || 0, prevRange))
+
+      // Visits by day map
+      const dailyMap = await statsAPI.getDailyMap().catch(() => ({}))
+      const getDayStr = (d) => {
+        const pad = (n) => String(n).padStart(2, '0')
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+      }
+      const countVisitsInRange = ([startTs, endTs]) => {
+        const start = new Date(startTs)
+        const end = new Date(endTs)
+        let day = new Date(start)
+        let total = 0
+        while (day < end) {
+          total += Number(dailyMap[getDayStr(day)] || 0)
+          day.setDate(day.getDate() + 1)
+        }
+        return total
+      }
+      const currentVisits = countVisitsInRange(currentRange)
+      const prevVisits = countVisitsInRange(prevRange)
+
       const categoryMap = new Map()
       products.forEach(p => {
         const key = p.category || 'Khác'
@@ -88,13 +115,13 @@ const AdminAnalytics = () => {
       const totalViewsForPercent = sum(categoryStats.map(c => c.views)) || 1
       categoryStats.forEach(c => { c.percentage = Number(((c.views / totalViewsForPercent) * 100).toFixed(1)) })
 
-      // Monthly views (approx by sum views of products created each month)
+      // Monthly visits using dailyMap (last 12 months)
       const monthlyViews = [...Array(12)].map((_, i) => {
         const date = new Date()
         date.setMonth(date.getMonth() - (11 - i))
-        const start = new Date(date.getFullYear(), date.getMonth(), 1).getTime()
-        const end = new Date(date.getFullYear(), date.getMonth() + 1, 1).getTime()
-        const views = sum(products.filter(p => within(p.createdAt || 0, [start, end])).map(p => p.views || 0))
+        const start = new Date(date.getFullYear(), date.getMonth(), 1)
+        const end = new Date(date.getFullYear(), date.getMonth() + 1, 1)
+        const views = countVisitsInRange([start.getTime(), end.getTime()])
         const month = `T${date.getMonth() + 1}`
         return { month, views }
       })
@@ -112,13 +139,13 @@ const AdminAnalytics = () => {
 
       const trends = {
         products: computeTrend(currentProducts.length, prevProducts.length),
-        views: computeTrend(totalViews, 0),
+        views: computeTrend(currentVisits, prevVisits),
         users: computeTrend(0, 0),
-        events: computeTrend(0, 0)
+        events: computeTrend(currentEvents.length, prevEvents.length)
       }
 
       setAnalyticsData({
-        overview: { totalProducts, totalViews, totalUsers: 0, totalEvents: 0 },
+        overview: { totalProducts, totalViews: currentVisits, totalUsers: 0, totalEvents },
         trends,
         categoryStats,
         monthlyViews,

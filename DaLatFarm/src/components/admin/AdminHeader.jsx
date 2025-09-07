@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { 
   Search, 
   Bell, 
   User, 
-  Settings, 
   LogOut, 
   Menu, 
   X,
-  ChevronDown,
-  MessageSquare
+  ChevronDown
 } from 'lucide-react'
+
+import { notificationsAPI } from '../../services/apiService'
 
 const AdminHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -18,35 +18,52 @@ const AdminHeader = () => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [profileName, setProfileName] = useState('Admin User')
+  const [profileEmail, setProfileEmail] = useState('admin@dalatfarm.com')
+  const [profileAvatar, setProfileAvatar] = useState('')
+  const [selectedNotification, setSelectedNotification] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Seed sample notifications (could be hooked to Firestore later)
-    const seeded = [
-      {
-        id: 1,
-        type: 'product',
-        message: 'Sản phẩm mới "Bông Atiso sấy khô" đã được thêm',
-        time: '2 phút trước',
-        isRead: false
-      },
-      {
-        id: 2,
-        type: 'user',
-        message: '5 người dùng mới đã truy cập website',
-        time: '15 phút trước',
-        isRead: false
-      },
-      {
-        id: 3,
-        type: 'event',
-        message: 'Sự kiện "Lễ hội hoa Đà Lạt" sắp diễn ra',
-        time: '1 giờ trước',
-        isRead: true
-      }
-    ]
-    setNotifications(seeded)
+    const loadProfile = () => {
+      try {
+        const n = localStorage.getItem('dalatfarm:admin:profileName')
+        const e = localStorage.getItem('dalatfarm:admin:profileEmail')
+        const a = localStorage.getItem('dalatfarm:admin:profileAvatar')
+        setProfileName(n || 'Admin User')
+        setProfileEmail(e || 'admin@dalatfarm.com')
+        setProfileAvatar(a || '')
+      } catch {}
+    }
+    loadProfile()
+    const handler = () => loadProfile()
+    window.addEventListener('dalatfarm:admin:profileUpdated', handler)
+    return () => window.removeEventListener('dalatfarm:admin:profileUpdated', handler)
   }, [])
+
+  const loadNotifications = useCallback(async () => {
+    try {
+      const list = await notificationsAPI.getAll()
+      const mapped = (list || []).map(n => ({
+        id: n.id,
+        type: n.type || 'info',
+        message: n.message || n.title || 'Thông báo',
+        title: n.title || n.message || 'Thông báo',
+        time: new Date(n.createdAt || Date.now()).toLocaleString('vi-VN'),
+        isRead: !!n.read
+      }))
+      setNotifications(mapped)
+    } catch (_) {
+      setNotifications([])
+    }
+  }, [])
+
+  useEffect(() => {
+    loadNotifications()
+    const onContact = () => loadNotifications()
+    window.addEventListener('dalatfarm:contact:submitted', onContact)
+    return () => window.removeEventListener('dalatfarm:contact:submitted', onContact)
+  }, [loadNotifications])
 
   // Keep unreadCount accurate based on notifications state
   useEffect(() => {
@@ -54,16 +71,35 @@ const AdminHeader = () => {
   }, [notifications])
 
   const handleLogout = () => {
-    // Add logout logic here
+    try { localStorage.removeItem('dalatfarm:admin:auth') } catch {}
     navigate('/admin/login')
   }
 
-  const markAsRead = (id) => {
+  const markAsRead = async (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n))
+    try { await notificationsAPI.markAsRead(id) } catch (_) {}
   }
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+    try { await notificationsAPI.markAllAsRead() } catch (_) {}
+  }
+
+  const getNotificationTargetPath = (n) => {
+    const t = (n?.type || '').toLowerCase()
+    if (t === 'product') return '/admin/products'
+    if (t === 'event') return '/admin/events'
+    if (t === 'user') return '/admin/users'
+    if (t === 'message') return '/admin/contacts'
+    return '/admin/activity'
+  }
+
+  const onOpenNotification = async (n) => {
+    setIsNotificationsOpen(false)
+    setSelectedNotification(n)
+    if (!n?.isRead) {
+      await markAsRead(n.id)
+    }
   }
 
   const getNotificationIcon = (type) => {
@@ -100,7 +136,7 @@ const AdminHeader = () => {
           <div className="flex items-center">
             <Link to="/admin" className="flex items-center space-x-3">
               <img
-                src="/images/logoAdmin.png"
+                src={profileAvatar || '/images/logoAdmin.png'}
                 alt="DaLat Farm"
                 className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-200 shadow"
               />
@@ -131,7 +167,7 @@ const AdminHeader = () => {
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 inline-flex h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -156,7 +192,7 @@ const AdminHeader = () => {
                           className={`px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer border-l-4 ${
                             notification.isRead ? 'border-transparent' : 'border-blue-500'
                           }`}
-                          onClick={() => markAsRead(notification.id)}
+                          onClick={() => onOpenNotification(notification)}
                         >
                           <div className="flex items-start space-x-3">
                             <div className="flex-shrink-0 mt-1">
@@ -181,14 +217,7 @@ const AdminHeader = () => {
                       </div>
                     )}
                   </div>
-                  <div className="px-4 py-2 border-t border-gray-200">
-                    <Link
-                      to="/admin/notifications"
-                      className="text-sm text-blue-600 hover:text-blue-700 text-center block"
-                    >
-                      Xem tất cả thông báo
-                    </Link>
-                  </div>
+                  {/* Footer removed to avoid redundant nav + warning */}
                 </div>
               )}
             </div>
@@ -200,13 +229,13 @@ const AdminHeader = () => {
                 className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <img
-                  src="/images/logoAdmin.png"
+                  src={profileAvatar || '/images/logoAdmin.png'}
                   alt="Admin User"
                   className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-200"
                 />
                 <div className="hidden lg:block text-left">
-                  <p className="text-sm font-medium text-gray-700">Admin User</p>
-                  <p className="text-sm text-gray-500">admin@dalatfarm.com</p>
+                  <p className="text-sm font-medium text-gray-700">{profileName}</p>
+                  <p className="text-sm text-gray-500">{profileEmail}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
@@ -215,8 +244,8 @@ const AdminHeader = () => {
               {isUserMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                   <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-medium text-gray-900">Admin User</p>
-                    <p className="text-sm text-gray-500">admin@dalatfarm.com</p>
+                    <p className="text-sm font-medium text-gray-900">{profileName}</p>
+                    <p className="text-sm text-gray-500">{profileEmail}</p>
                   </div>
                   <Link
                     to="/admin/profile"
@@ -225,20 +254,8 @@ const AdminHeader = () => {
                     <User className="w-4 h-4" />
                     <span>Hồ sơ</span>
                   </Link>
-                  <Link
-                    to="/admin/settings"
-                    className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Cài đặt</span>
-                  </Link>
-                  <Link
-                    to="/admin/messages"
-                    className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Tin nhắn</span>
-                  </Link>
+                  {/* Settings removed */}
+                  {/* Messages feature removed */}
                   <hr className="my-2" />
                   <button
                     onClick={handleLogout}
@@ -288,6 +305,35 @@ const AdminHeader = () => {
             setIsNotificationsOpen(false)
           }}
         />
+      )}
+      {/* Notification detail modal */}
+      {selectedNotification && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedNotification(null)} />
+          <div className="relative bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-md mx-4 p-5">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                {getNotificationIcon(selectedNotification.type)}
+                <h3 className="text-lg font-semibold text-gray-900">{selectedNotification.title}</h3>
+              </div>
+              <button className="text-gray-400 hover:text-gray-600" onClick={() => setSelectedNotification(null)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-700 whitespace-pre-line">{selectedNotification.message}</p>
+            <p className="text-xs text-gray-500 mt-3">{selectedNotification.time}</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                onClick={() => setSelectedNotification(null)}
+              >Đóng</button>
+              <button
+                className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={() => { navigate(getNotificationTargetPath(selectedNotification)); setSelectedNotification(null) }}
+              >Xem chi tiết</button>
+            </div>
+          </div>
+        </div>
       )}
     </header>
   )

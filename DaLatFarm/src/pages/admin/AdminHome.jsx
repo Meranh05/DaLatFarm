@@ -127,18 +127,28 @@ const AdminHome = () => {
   }
 
   const updateRecentProducts = () => {
+    const allViews = products.map(p => Number(p.views || 0))
+    const avgViews = allViews.length ? Math.round(allViews.reduce((a, b) => a + b, 0) / allViews.length) : 0
+
     const sortedProducts = [...products]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 5)
-      .map(product => ({
-        id: product.id,
-        name: product.name,
-        category: product.category,
-        views: product.views || 0,
-        image: product.image,
-        status: product.featured ? 'active' : 'inactive',
-        trend: Math.random() > 0.5 ? 'up' : 'down'
-      }))
+      .map(product => {
+        const views = Number(product.views || 0)
+        const diff = views - avgViews
+        const percent = avgViews > 0 ? ((diff / avgViews) * 100) : (views > 0 ? 100 : 0)
+        const trend = diff >= 0 ? 'up' : 'down'
+        return {
+          id: product.id,
+          name: product.name,
+          category: product.category,
+          views,
+          image: product.image,
+          status: product.featured ? 'active' : 'inactive',
+          trend,
+          percent: Number(percent.toFixed(1))
+        }
+      })
 
     setRecentProducts(sortedProducts)
   }
@@ -174,7 +184,7 @@ const AdminHome = () => {
           <div>
             <h1 className="text-3xl font-bold">Chào mừng trở lại!</h1>
             <p className="mt-2 text-blue-100">
-              Đây là tổng quan về hoạt động của DALAT FARM
+              Đây là tổng quan về hoạt động của DaLat Farm
             </p>
             <p className="mt-1 text-sm text-blue-200">
               Cập nhật lần cuối: {new Date().toLocaleString('vi-VN')}
@@ -258,7 +268,7 @@ const AdminHome = () => {
                   <div className="flex items-center mt-1">
                     {getTrendIcon(product.trend)}
                     <span className={`text-xs ml-1 ${getTrendColor(product.trend)}`}>
-                      {product.trend === 'up' ? '+12%' : '-5%'}
+                      {product.percent > 0 ? `+${product.percent}%` : `${product.percent}%`}
                     </span>
                   </div>
                 </div>

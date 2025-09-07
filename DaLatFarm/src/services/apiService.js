@@ -215,6 +215,43 @@ export const eventsAPI = {
   }
 }
 
+// Contact messages API
+export const messagesAPI = {
+  create: async ({ name, email, phone, subject, message }) => {
+    const data = {
+      name: (name || '').trim(),
+      email: (email || '').trim(),
+      phone: (phone || '').trim(),
+      subject: (subject || '').trim(),
+      message: (message || '').trim(),
+      status: 'new',
+      createdAt: Date.now()
+    }
+    const res = await addDoc(collection(db, 'messages'), data)
+    // Side-effects: notify admin and log activity (best-effort)
+    try {
+      await notificationsAPI.push({
+        type: 'message',
+        title: 'Tin nhắn liên hệ mới',
+        message: `${data.name || 'Khách'} — ${data.subject || 'Không có chủ đề'}`
+      })
+    } catch (_) {}
+    try {
+      await activitiesAPI.log({ type: 'contact:create', refId: res.id, title: 'Tin nhắn liên hệ', message: `${data.name || 'Khách'} đã gửi liên hệ` })
+    } catch (_) {}
+    return { id: res.id, ...data }
+  },
+  getAll: async () => {
+    const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+  },
+  updateStatus: async (id, status) => {
+    await updateDoc(doc(db, 'messages', id), { status, updatedAt: Date.now() })
+    return { id, status }
+  }
+}
+
 // News API using Firestore
 
 // Upload API: Prefer Cloudinary if configured; else use Firebase Storage
@@ -320,6 +357,20 @@ export const statsAPI = {
       }
     })
     return { ok: true }
+  },
+  // Fetch all daily visit counts as a map of YYYY-MM-DD -> count
+  getDailyMap: async () => {
+    const statsRef = doc(db, 'stats', 'daily')
+    const snap = await getDoc(statsRef)
+    if (!snap.exists()) return {}
+    const data = snap.data() || {}
+    const out = {}
+    Object.keys(data).forEach((k) => {
+      if (k.length === 10 && /\d{4}-\d{2}-\d{2}/.test(k)) {
+        out[k] = Number(data[k] || 0)
+      }
+    })
+    return out
   }
 }
 
@@ -362,6 +413,7 @@ export default {
   categoriesAPI,
   productsAPI,
   eventsAPI,
+  messagesAPI,
   uploadAPI,
   healthAPI,
   statsAPI,

@@ -6,12 +6,12 @@ import {
   Users,
   Calendar,
   BarChart3,
-  Settings,
   FileText,
   Activity,
   ChevronRight,
   Circle,
-  Radio
+  Radio,
+  Mail
 } from 'lucide-react'
 import RealTimeStatus from './RealTimeStatus'
 
@@ -75,12 +75,13 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
       description: 'Báo cáo và phân tích'
     },
     { 
-      name: 'Báo cáo', 
-      href: '/admin/reports', 
-      icon: FileText,
+      name: 'Liên hệ', 
+      href: '/admin/contacts', 
+      icon: Mail,
       badge: null,
-      description: 'Xuất báo cáo'
+      description: 'Tin nhắn khách hàng'
     },
+  
     { 
       name: 'Hoạt động', 
       href: '/admin/activity', 
@@ -88,13 +89,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
       badge: null,
       description: 'Theo dõi hoạt động'
     },
-    { 
-      name: 'Cài đặt', 
-      href: '/admin/settings', 
-      icon: Settings,
-      badge: null,
-      description: 'Cấu hình hệ thống'
-    },
+    // Settings removed
    
   ]
 
@@ -195,29 +190,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
         )}
 
         {/* User Info */}
-        <div className="flex-shrink-0 flex bg-gray-800/95 p-4 border-t border-white/5">
-          <div className="flex items-center w-full">
-            <div className="relative">
-              <img
-                src="/images/logoAdmin.png"
-                alt="Admin User"
-                className="inline-block h-10 w-10 rounded-full ring-2 ring-blue-300 shadow"
-              />
-              {/* Online status indicator */}
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-700"></div>
-            </div>
-            {!isCollapsed && (
-              <div className="ml-3 min-w-0 flex-1">
-                <p className="text-sm font-medium text-white truncate">Admin User</p>
-                <p className="text-xs text-gray-300 truncate">admin@dalatfarm.com</p>
-                <div className="flex items-center mt-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-xs text-green-400">Online</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <SidebarUser isCollapsed={isCollapsed} />
 
         {/* Collapse/Expand Button */}
         <button
@@ -236,3 +209,49 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
 }
 
 export default AdminSidebar
+
+// Syncs user name/email/avatar with localStorage and profile updates
+const SidebarUser = ({ isCollapsed }) => {
+  const [name, setName] = useState('Admin User')
+  const [email, setEmail] = useState('admin@dalatfarm.com')
+  const [avatar, setAvatar] = useState('')
+
+  useEffect(() => {
+    const load = () => {
+      try {
+        setName(localStorage.getItem('dalatfarm:admin:profileName') || 'Admin User')
+        setEmail(localStorage.getItem('dalatfarm:admin:profileEmail') || 'admin@dalatfarm.com')
+        setAvatar(localStorage.getItem('dalatfarm:admin:profileAvatar') || '')
+      } catch {}
+    }
+    load()
+    const handler = () => load()
+    window.addEventListener('dalatfarm:admin:profileUpdated', handler)
+    return () => window.removeEventListener('dalatfarm:admin:profileUpdated', handler)
+  }, [])
+
+  return (
+    <div className="flex-shrink-0 flex bg-gray-800/95 p-4 border-t border-white/5">
+      <div className="flex items-center w-full">
+        <div className="relative">
+          <img
+            src={avatar || '/images/logoAdmin.png'}
+            alt="Admin User"
+            className="inline-block h-10 w-10 rounded-full ring-2 ring-blue-300 shadow object-cover"
+          />
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-700"></div>
+        </div>
+        {!isCollapsed && (
+          <div className="ml-3 min-w-0 flex-1">
+            <p className="text-sm font-medium text-white truncate">{name}</p>
+            <p className="text-xs text-gray-300 truncate">{email}</p>
+            <div className="flex items-center mt-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-xs text-green-400">Online</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

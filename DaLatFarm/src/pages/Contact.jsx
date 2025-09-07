@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react'
+import { messagesAPI } from '../services/apiService'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -19,18 +20,23 @@ const Contact = () => {
     })
   }
 
-  const handleSubmit = (e) => {
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState({ ok: false, msg: '' })
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      subject: '',
-      message: ''
-    })
+    setResult({ ok: false, msg: '' })
+    setSending(true)
+    try {
+      await messagesAPI.create(formData)
+      setResult({ ok: true, msg: 'Đã gửi liên hệ thành công. Chúng tôi sẽ phản hồi sớm!' })
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+      // Dispatch a custom event if admin UI listens
+      window.dispatchEvent(new Event('dalatfarm:contact:submitted'))
+    } catch (err) {
+      setResult({ ok: false, msg: 'Gửi thất bại. Vui lòng thử lại sau.' })
+    }
+    setSending(false)
   }
 
   return (
@@ -150,11 +156,15 @@ const Contact = () => {
 
                 <button
                   type="submit"
-                  className="btn-primary bg-red-600 hover:bg-red-700 w-full flex items-center justify-center"
+                  disabled={sending}
+                  className="btn-primary bg-red-600 hover:bg-red-700 disabled:opacity-60 w-full flex items-center justify-center"
                 >
                   <Send size={20} className="mr-2" />
-                  Gửi tin nhắn
+                  {sending ? 'Đang gửi...' : 'Gửi tin nhắn'}
                 </button>
+                {result.msg && (
+                  <p className={`text-sm mt-2 ${result.ok ? 'text-green-600' : 'text-red-600'}`}>{result.msg}</p>
+                )}
               </form>
             </div>
 
@@ -233,11 +243,14 @@ const Contact = () => {
               </div>
 
               {/* Map */}
-              <div className="bg-gray-200 rounded-lg h-64 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <MapPin size={48} className="mx-auto mb-2" />
-                  <p>Bản đồ sẽ được hiển thị tại đây</p>
-                </div>
+              <div className="rounded-lg overflow-hidden shadow">
+                <iframe
+                  title="DaLat Farm Location"
+                  src="https://www.google.com/maps?q=1%20Ph%C3%B9%20%C4%90%E1%BB%95ng%20Thi%C3%AAn%20V%C6%B0%C6%A1ng,%20Ph%C6%B0%E1%BB%9Dng%208,%20%C4%90%C3%A0%20L%E1%BA%A1t,%20L%C3%A2m%20%C4%90%E1%BB%93ng&output=embed"
+                  className="w-full h-64 border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
             </div>
           </div>
