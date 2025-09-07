@@ -32,8 +32,12 @@ VITE_CLOUDINARY_UPLOAD_PRESET=...
 5) Build & host
 - Local build: npm ci && npm run build
 - Static hosting options:
-  a) Vercel/Netlify: connect repo, set build command: npm run build; output: DaLatFarm/DaLatFarm/dist
-  b) Firebase Hosting: firebase init hosting (public: DaLatFarm/DaLatFarm/dist) → firebase deploy
+  a) Vercel: import repo → Framework: Other → Build: npm run build → Output: dist → Thêm domain `dalatfarm.id.vn` trong Project Settings → CNAME trỏ về `cname.vercel-dns.com`.
+  b) Netlify: connect repo → Build: npm run build → Publish: dist → Add domain `dalatfarm.id.vn` → CNAME theo hướng dẫn.
+  c) Firebase Hosting: đã thêm `firebase/firebase.json` (public: DaLatFarm/DaLatFarm/dist). Chạy:
+     - npm run build
+     - firebase use YOUR_FIREBASE_PROJECT_ID
+     - firebase deploy --only hosting
 
 6) Admin login (demo)
 - Username: admin
