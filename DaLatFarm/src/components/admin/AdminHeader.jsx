@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 
 import { notificationsAPI } from '../../services/apiService'
+import { onSnapshot, collection, query, orderBy } from 'firebase/firestore'
+import { db } from '../../config/firebase'
 
 const AdminHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -62,7 +64,24 @@ const AdminHeader = () => {
     loadNotifications()
     const onContact = () => loadNotifications()
     window.addEventListener('dalatfarm:contact:submitted', onContact)
-    return () => window.removeEventListener('dalatfarm:contact:submitted', onContact)
+    // Realtime notifications listener
+    const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'))
+    const unsub = onSnapshot(q, (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      const mapped = (list || []).map(n => ({
+        id: n.id,
+        type: n.type || 'info',
+        message: n.message || n.title || 'Thông báo',
+        title: n.title || n.message || 'Thông báo',
+        time: new Date(n.createdAt || Date.now()).toLocaleString('vi-VN'),
+        isRead: !!n.read
+      }))
+      setNotifications(mapped)
+    })
+    return () => {
+      window.removeEventListener('dalatfarm:contact:submitted', onContact)
+      unsub()
+    }
   }, [loadNotifications])
 
   // Keep unreadCount accurate based on notifications state

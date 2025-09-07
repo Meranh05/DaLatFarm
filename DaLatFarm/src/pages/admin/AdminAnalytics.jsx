@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { useProducts } from '../../context/ProductContext'
 import { eventsAPI, statsAPI } from '../../services/apiService'
+import * as XLSX from 'xlsx'
 
 const AdminAnalytics = () => {
   const { products } = useProducts()
@@ -173,6 +174,96 @@ const AdminAnalytics = () => {
     return n.toString()
   }
 
+  const escapeCsv = (s='') => '"' + String(s).replaceAll('"','""') + '"'
+  const exportCsv = () => {
+    const lines = []
+    // Tổng quan
+    lines.push('Tổng quan')
+    const o = analyticsData.overview || {}
+    lines.push(['Chỉ số','Giá trị'].join(','))
+    lines.push(['Tổng sản phẩm', o.totalProducts ?? 0].join(','))
+    lines.push(['Tổng lượt truy cập', o.totalViews ?? 0].join(','))
+    lines.push(['Tổng sự kiện', o.totalEvents ?? 0].join(','))
+    lines.push('')
+
+    // Xu hướng
+    lines.push('Xu hướng')
+    lines.push(['Chỉ số','Hiện tại','Kỳ trước','Thay đổi','Xu hướng'].join(','))
+    Object.entries(analyticsData.trends || {}).forEach(([k,v])=>{
+      const label = k === 'products' ? 'Sản phẩm mới' : k === 'views' ? 'Lượt truy cập' : k === 'events' ? 'Sự kiện' : 'Người dùng'
+      lines.push([label, v.current ?? 0, v.previous ?? 0, v.change ?? '', v.trend ?? ''].join(','))
+    })
+    lines.push('')
+
+    // Phân bố danh mục
+    lines.push('Phân bố danh mục')
+    lines.push(['Danh mục','Sản phẩm','Lượt xem','Tỷ lệ %'].join(','))
+    ;(analyticsData.categoryStats||[]).forEach(c=>{
+      lines.push([escapeCsv(c.name), c.products ?? 0, c.views ?? 0, c.percentage ?? 0].join(','))
+    })
+    lines.push('')
+
+    // Top sản phẩm
+    lines.push('Top sản phẩm')
+    lines.push(['Tên','Danh mục','Lượt xem'].join(','))
+    ;(analyticsData.topProducts||[]).forEach(p=>{
+      lines.push([escapeCsv(p.name), escapeCsv(p.category), p.views ?? 0].join(','))
+    })
+    lines.push('')
+
+    // Lượt truy cập theo tháng
+    lines.push('Lượt truy cập theo tháng')
+    lines.push(['Tháng','Lượt truy cập'].join(','))
+    ;(analyticsData.monthlyViews||[]).forEach(m=>{
+      lines.push([m.month, m.views ?? 0].join(','))
+    })
+
+    // Thêm BOM để Excel hiển thị tiếng Việt đúng
+    const csv = '\uFEFF' + lines.join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `analytics_${timeRange}_${Date.now()}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportXlsx = () => {
+    const wb = XLSX.utils.book_new()
+    const o = analyticsData.overview || {}
+    const wsOverview = XLSX.utils.aoa_to_sheet([
+      ['Chỉ số','Giá trị'],
+      ['Tổng sản phẩm', o.totalProducts ?? 0],
+      ['Tổng lượt truy cập', o.totalViews ?? 0],
+      ['Tổng sự kiện', o.totalEvents ?? 0]
+    ])
+    XLSX.utils.book_append_sheet(wb, wsOverview, 'Tổng quan')
+
+    const trends = [['Chỉ số','Hiện tại','Kỳ trước','Thay đổi','Xu hướng']]
+    Object.entries(analyticsData.trends || {}).forEach(([k,v])=>{
+      const label = k === 'products' ? 'Sản phẩm mới' : k === 'views' ? 'Lượt truy cập' : k === 'events' ? 'Sự kiện' : 'Người dùng'
+      trends.push([label, v.current ?? 0, v.previous ?? 0, v.change ?? '', v.trend ?? ''])
+    })
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(trends), 'Xu hướng')
+
+    const cats = [['Danh mục','Sản phẩm','Lượt xem','Tỷ lệ %'],
+      ...(analyticsData.categoryStats||[]).map(c=>[c.name, c.products ?? 0, c.views ?? 0, c.percentage ?? 0])]
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(cats), 'Danh mục')
+
+    const tops = [['Tên','Danh mục','Lượt xem'],
+      ...(analyticsData.topProducts||[]).map(p=>[p.name, p.category, p.views ?? 0])]
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tops), 'Top sản phẩm')
+
+    const monthly = [['Tháng','Lượt truy cập'],
+      ...(analyticsData.monthlyViews||[]).map(m=>[m.month, m.views ?? 0])]
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(monthly), 'Tháng')
+
+    XLSX.writeFile(wb, `analytics_${timeRange}_${Date.now()}.xlsx`)
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -276,7 +367,14 @@ const AdminAnalytics = () => {
         <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div><h3 className="text-lg font-semibold text-gray-900">Xuất báo cáo</h3><p className="text-sm text-gray-500">Tải xuống báo cáo chi tiết dưới dạng PDF hoặc Excel</p></div>
-            <div className="flex items-center space-x-3"><button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"><Download className="w-4 h-4" /><span>PDF</span></button><button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"><Download className="w-4 h-4" /><span>Excel</span></button></div>
+            <div className="flex items-center space-x-3">
+              <button onClick={exportCsv} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                <Download className="w-4 h-4" /><span>CSV</span>
+              </button>
+              <button onClick={exportXlsx} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
+                <Download className="w-4 h-4" /><span>XLSX</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

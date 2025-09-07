@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { messagesAPI } from '../../services/apiService'
-import { Mail, Phone, User, Search, RefreshCw, Eye, X, Filter, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { Mail, Phone, User, Search, RefreshCw, Eye, X, Filter, CheckCircle2, Clock, AlertCircle, Download } from 'lucide-react'
 
 const AdminContacts = () => {
   const [loading, setLoading] = useState(true)
@@ -9,6 +9,10 @@ const AdminContacts = () => {
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
   const [status, setStatus] = useState('all')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   const load = async () => {
     setLoading(true)
@@ -33,12 +37,45 @@ const AdminContacts = () => {
     return () => { document.body.style.overflow = original }
   }, [selected])
 
+  const escapeCsv = (s='') => '"' + String(s).replaceAll('"','""') + '"'
+  const exportCsv = (rows) => {
+    const header = ['Name','Email','Phone','Subject','Message','Status','CreatedAt']
+    const lines = [header.join(',')]
+    rows.forEach(m => {
+      lines.push([
+        escapeCsv(m.name||'Khách'),
+        escapeCsv(m.email||''),
+        escapeCsv(m.phone||''),
+        escapeCsv(m.subject||''),
+        escapeCsv(m.message||''),
+        escapeCsv(m.status||'new'),
+        escapeCsv(new Date(m.createdAt||Date.now()).toISOString())
+      ].join(','))
+    })
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `contacts_${Date.now()}.csv`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
   const filtered = items.filter((m) => {
     const s = `${m.name} ${m.email} ${m.phone} ${m.subject} ${m.message}`.toLowerCase()
     const okText = s.includes(query.toLowerCase())
     const okStatus = status === 'all' ? true : (m.status || 'new') === status
-    return okText && okStatus
+    const ts = Number(m.createdAt || 0)
+    const okStart = startDate ? ts >= new Date(startDate).setHours(0,0,0,0) : true
+    const okEnd = endDate ? ts <= new Date(endDate).setHours(23,59,59,999) : true
+    return okText && okStatus && okStart && okEnd
   })
+  const total = filtered.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const pageData = filtered.slice((page-1)*pageSize, (page-1)*pageSize + pageSize)
+  useEffect(() => { setPage(1) }, [query, status, startDate, endDate, pageSize])
 
   if (loading) {
     return (
@@ -58,7 +95,7 @@ const AdminContacts = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
         <div className="relative md:col-span-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -83,6 +120,8 @@ const AdminContacts = () => {
             </select>
           </div>
         </div>
+        <input type="date" value={startDate} onChange={(e)=>setStartDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+        <input type="date" value={endDate} onChange={(e)=>setEndDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -98,7 +137,7 @@ const AdminContacts = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filtered.map((m) => (
+            {pageData.map((m) => (
               <tr key={m.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3">
                   <div className="flex items-center space-x-2">
@@ -134,6 +173,22 @@ const AdminContacts = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">Trang {page}/{totalPages} · {total} liên hệ</div>
+        <div className="flex items-center space-x-3">
+          <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="px-2 py-1 border border-gray-300 rounded-lg">
+            {[5,10,20,50].map(n => <option key={n} value={n}>{n}/trang</option>)}
+          </select>
+          <div className="inline-flex border rounded-lg overflow-hidden">
+            <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-3 py-1 text-sm disabled:opacity-50">«</button>
+            <button disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="px-3 py-1 text-sm disabled:opacity-50">»</button>
+          </div>
+          <button onClick={()=>exportCsv(filtered)} className="px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-black inline-flex items-center space-x-1">
+            <Download className="w-4 h-4" /><span>Xuất CSV</span>
+          </button>
+        </div>
       </div>
 
       {selected && createPortal(
