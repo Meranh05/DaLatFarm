@@ -20,7 +20,7 @@ const AdminLayout = ({ children }) => {
         
         {/* Main Content */}
         <div className={`flex-1 transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-56'
+          isSidebarCollapsed ? 'lg:ml-14' : 'lg:ml-[220px]'
         }`}>
           <div className="p-2 lg:p-4 scale-[0.95] origin-top-left text-[13px] md:text-[14px] w-full max-w-none">
             {children}
