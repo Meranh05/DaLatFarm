@@ -26,6 +26,8 @@ const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState(null)
   const [selectedProducts, setSelectedProducts] = useState([])
   const [lastUpdate, setLastUpdate] = useState(new Date())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Filtered products
   const filteredProducts = products.filter(product => {
@@ -175,6 +177,17 @@ const AdminProducts = () => {
     }
   }
 
+  // Reset to first page whenever filters/search change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedCategory])
+
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil(sortedProducts.length / itemsPerPage))
+  const clampedPage = Math.min(currentPage, totalPages)
+  const pageStart = (clampedPage - 1) * itemsPerPage
+  const paginatedProducts = sortedProducts.slice(pageStart, pageStart + itemsPerPage)
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -316,6 +329,19 @@ const AdminProducts = () => {
               <Download className="w-4 h-4 mr-2" />
               Xuất CSV
             </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Hiển thị</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="px-2 py-1 border border-gray-300 rounded-md text-sm"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="text-sm text-gray-600">mục/trang</span>
+            </div>
           </div>
         </div>
 
@@ -414,7 +440,7 @@ const AdminProducts = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sortedProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center">
@@ -432,13 +458,13 @@ const AdminProducts = () => {
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                          <div className="text-sm font-medium text-gray-900 max-w-[280px] truncate">{product.name}</div>
                           <div className="text-sm text-gray-500 line-clamp-2">{product.description}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[200px] truncate">
                         {product.category}
                       </span>
                     </td>
@@ -488,6 +514,37 @@ const AdminProducts = () => {
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {sortedProducts.length > 0 && (
+        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2">
+          <div className="text-sm text-gray-600">
+            Trang <span className="font-medium">{clampedPage}</span> / {totalPages} — Tổng: {sortedProducts.length}
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={clampedPage === 1}
+              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
+            >Đầu</button>
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={clampedPage === 1}
+              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
+            >Trước</button>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={clampedPage === totalPages}
+              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
+            >Sau</button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={clampedPage === totalPages}
+              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
+            >Cuối</button>
+          </div>
+        </div>
+      )}
 
       {/* Product Form Modal */}
       <ProductForm
