@@ -14,6 +14,8 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('featured')
   const [lastUpdate, setLastUpdate] = useState(new Date())
   const [sortOpen, setSortOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
 
   const sortOptions = [
     { key: 'featured', label: 'Nổi bật' },
@@ -63,6 +65,16 @@ const Products = () => {
   }
 
   const currentSortLabel = sortOptions.find(o => o.key === sortBy)?.label || 'Sắp xếp'
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, selectedCategory, sortBy, viewMode])
+
+  // Pagination calculations
+  const total = sortedProducts.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const pageData = sortedProducts.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -167,7 +179,7 @@ const Products = () => {
                   <div className="text-xs text-gray-600 mb-3">Hiển thị <span className="font-medium">{sortedProducts.length}</span> / <span className="font-medium">{products.length}</span> sản phẩm{selectedCategory !== 'all' && (<span className="ml-2 text-orange-600">• {selectedCategory}</span>)}</div>
                   {viewMode === 'list' ? (
                     <div className="space-y-3">
-                      {sortedProducts.map((product) => (
+                      {pageData.map((product) => (
                         <div key={product.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all">
                           <div className="flex">
                             <div className="w-44 h-28 flex-shrink-0 overflow-hidden">
@@ -185,7 +197,7 @@ const Products = () => {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {sortedProducts.map((product) => (
+                      {pageData.map((product) => (
                         <div key={product.id} className="group bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:border-orange-200 transition-all duration-300">
                           <div className="relative h-44 md:h-48 overflow-hidden">
                             <img src={product.image} alt={product.name} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300" />
@@ -203,6 +215,21 @@ const Products = () => {
                     </div>
                   )}
                 </>
+              )}
+              {/* Pagination - styled similar to Admin Contacts */}
+              {sortedProducts.length > 0 && (
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-sm text-gray-600">Trang {page}/{totalPages} · {total} sản phẩm</div>
+                  <div className="flex items-center space-x-3">
+                    <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="px-2 py-1 border border-gray-300 rounded-lg text-sm">
+                      {[8,12,16,24].map(n => <option key={n} value={n}>{n}/trang</option>)}
+                    </select>
+                    <div className="inline-flex border rounded-lg overflow-hidden">
+                      <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-3 py-1 text-sm disabled:opacity-50">«</button>
+                      <button disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="px-3 py-1 text-sm disabled:opacity-50">»</button>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
