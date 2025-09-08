@@ -221,8 +221,9 @@ const AdminProducts = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm p-4">
+      {/* KPI Cards - centered and consistent style */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Eye className="w-6 h-6 text-blue-600" />
@@ -234,7 +235,7 @@ const AdminProducts = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <Filter className="w-6 h-6 text-green-600" />
@@ -246,7 +247,7 @@ const AdminProducts = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center">
             <div className="p-2 bg-orange-100 rounded-lg">
               <Eye className="w-6 h-6 text-orange-600" />
@@ -260,7 +261,7 @@ const AdminProducts = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <RefreshCw className="w-6 h-6 text-purple-600" />
@@ -517,31 +518,16 @@ const AdminProducts = () => {
 
       {/* Pagination */}
       {sortedProducts.length > 0 && (
-        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2">
-          <div className="text-sm text-gray-600">
-            Trang <span className="font-medium">{clampedPage}</span> / {totalPages} — Tổng: {sortedProducts.length}
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={clampedPage === 1}
-              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
-            >Đầu</button>
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={clampedPage === 1}
-              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
-            >Trước</button>
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={clampedPage === totalPages}
-              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
-            >Sau</button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={clampedPage === totalPages}
-              className="px-2 py-1 border rounded-md text-sm disabled:opacity-50"
-            >Cuối</button>
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">Trang {clampedPage}/{totalPages} · Tổng: {sortedProducts.length}</div>
+          <div className="flex items-center space-x-3">
+            <select value={itemsPerPage} onChange={(e)=>setItemsPerPage(Number(e.target.value))} className="px-2 py-1 border border-gray-300 rounded-lg">
+              {[10,20,50].map(n => <option key={n} value={n}>{n}/trang</option>)}
+            </select>
+            <div className="inline-flex border rounded-lg overflow-hidden">
+              <button disabled={clampedPage===1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} className="px-3 py-1 text-sm disabled:opacity-50">«</button>
+              <button disabled={clampedPage===totalPages} onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} className="px-3 py-1 text-sm disabled:opacity-50">»</button>
+            </div>
           </div>
         </div>
       )}
