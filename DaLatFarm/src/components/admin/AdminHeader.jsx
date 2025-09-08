@@ -150,31 +150,31 @@ const AdminHeader = () => {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14">
           {/* Left side - Logo */}
           <div className="flex items-center">
             <Link to="/admin" className="flex items-center space-x-3">
               <img
                 src={profileAvatar || '/images/logoAdmin.png'}
                 alt="DaLat Farm"
-                className="w-12 h-12 rounded-lg object-cover ring-2 ring-blue-200 shadow"
+                className="w-10 h-10 rounded-lg object-cover ring-2 ring-blue-200 shadow"
               />
               <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-gray-900">DaLat Farm</h1>
-                <p className="text-xs text-gray-500">Admin Panel</p>
+                <h1 className="text-base font-bold text-gray-900 leading-tight">DaLat Farm</h1>
+                <p className="text-xs text-gray-500 leading-tight">Admin Panel</p>
               </div>
             </Link>
           </div>
 
           {/* Right side - Search, Notifications, User Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {/* Search */}
-            <div className="hidden lg:block relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="hidden md:block relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Tìm kiếm..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 transition-all duration-200"
+                className="pl-10 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent w-56 lg:w-64 xl:w-72 transition-all duration-200"
               />
             </div>
 
@@ -182,7 +182,7 @@ const AdminHeader = () => {
             <div className="relative">
               <button 
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+                className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors rounded-lg hover:bg-gray-100"
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -245,16 +245,16 @@ const AdminHeader = () => {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <img
                   src={profileAvatar || '/images/logoAdmin.png'}
                   alt="Admin User"
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-200"
+                  className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-200"
                 />
-                <div className="hidden lg:block text-left">
-                  <p className="text-sm font-medium text-gray-700">{profileName}</p>
-                  <p className="text-sm text-gray-500">{profileEmail}</p>
+                <div className="hidden lg:block text-left max-w-[12rem]">
+                  <p className="text-sm font-medium text-gray-700 truncate">{profileName}</p>
+                  <p className="text-sm text-gray-500 truncate">{profileEmail}</p>
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
