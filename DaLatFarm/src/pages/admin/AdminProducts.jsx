@@ -176,7 +176,7 @@ const AdminProducts = () => {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -321,7 +321,7 @@ const AdminProducts = () => {
 
         {/* Active Filters Summary */}
         {(searchTerm || selectedCategory !== 'all') && (
-          <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
             <h4 className="text-sm font-medium text-orange-800 mb-2">Bộ lọc đang hoạt động:</h4>
             <div className="flex flex-wrap gap-2">
               {selectedCategory !== 'all' && (
@@ -342,7 +342,7 @@ const AdminProducts = () => {
       {/* Products Table/List */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Table Header */}
-        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <input
