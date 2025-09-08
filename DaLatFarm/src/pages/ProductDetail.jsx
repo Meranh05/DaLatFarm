@@ -167,8 +167,7 @@ const ProductDetail = () => {
               )}
               <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
               {product.brand && (
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-orange-50 text-orange-700 border border-orange-200 w-max">
-                  <span className="mr-1">Thương hiệu</span>
+                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-50 text-orange-700 border border-orange-200 w-max">
                   <span className="font-bold">{product.brand}</span>
                 </div>
               )}
