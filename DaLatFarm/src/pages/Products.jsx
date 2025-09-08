@@ -76,6 +76,20 @@ const Products = () => {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const pageData = sortedProducts.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize)
 
+  // Build page list with ellipsis: 1, 2, ..., n
+  const buildPageList = () => {
+    const items = []
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+        items.push(p)
+      } else {
+        const last = items[items.length - 1]
+        if (last !== '...') items.push('...')
+      }
+    }
+    return items
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -219,14 +233,16 @@ const Products = () => {
               {/* Pagination - styled similar to Admin Contacts */}
               {sortedProducts.length > 0 && (
                 <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-gray-600">Trang {page}/{totalPages} · {total} sản phẩm</div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center gap-4">
                     <div className="relative">
                       <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                        {[8,12,16,24].map(n => <option key={n} value={n}>{n}/trang</option>)}
+                        {[8,12,16,24].map(n => <option key={n} value={n}>Hiển thị {n}</option>)}
                       </select>
                       <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
+                    <div className="text-sm text-gray-600">Tổng <span className="font-semibold">{total}</span> sản phẩm</div>
+                  </div>
+                  <div className="flex items-center space-x-3">
                     <div className="inline-flex items-center bg-white border border-gray-300 rounded-full shadow-sm overflow-hidden">
                       <button title="Trang đầu" disabled={page<=1} onClick={()=>setPage(1)} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white">
                         <ChevronsLeft className="w-4 h-4" />
@@ -234,6 +250,15 @@ const Products = () => {
                       <button title="Trang trước" disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white border-l border-gray-200">
                         <ChevronLeft className="w-4 h-4" />
                       </button>
+                      {/* Numbered pages with ellipsis */}
+                      <div className="flex items-center">
+                        {buildPageList().map((it, idx) => it === '...'
+                          ? <span key={`e-${idx}`} className="px-2 text-gray-400">…</span>
+                          : (
+                            <button key={it} onClick={()=>setPage(it)} className={`w-9 h-9 mx-0.5 rounded-lg text-sm border ${page===it ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 hover:bg-gray-50 text-gray-700'}`}>{it}</button>
+                          )
+                        )}
+                      </div>
                       <button title="Trang sau" disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white border-l border-gray-200">
                         <ChevronRight className="w-4 h-4" />
                       </button>
