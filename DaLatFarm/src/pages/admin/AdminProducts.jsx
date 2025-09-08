@@ -223,56 +223,36 @@ const AdminProducts = () => {
       {/* Stats Cards */}
       {/* KPI Cards - centered and consistent style */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Eye className="w-6 h-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
-              <p className="text-2xl font-bold text-gray-900">{products.length}</p>
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
+          <div className="p-2 bg-blue-100 rounded-lg mb-2">
+            <Eye className="w-6 h-6 text-blue-600" />
           </div>
+          <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
+          <p className="text-2xl font-bold text-gray-900">{products.length}</p>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Filter className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Danh mục</p>
-              <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
+          <div className="p-2 bg-green-100 rounded-lg mb-2">
+            <Filter className="w-6 h-6 text-green-600" />
           </div>
+          <p className="text-sm font-medium text-gray-600">Danh mục</p>
+          <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Eye className="w-6 h-6 text-orange-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Nổi bật</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {products.filter(p => p.featured).length}
-              </p>
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
+          <div className="p-2 bg-orange-100 rounded-lg mb-2">
+            <Eye className="w-6 h-6 text-orange-600" />
           </div>
+          <p className="text-sm font-medium text-gray-600">Nổi bật</p>
+          <p className="text-2xl font-bold text-gray-900">{products.filter(p => p.featured).length}</p>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <RefreshCw className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Cập nhật</p>
-              <p className="text-sm font-bold text-gray-900">
-                {lastUpdate.toLocaleTimeString('vi-VN')}
-              </p>
-            </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
+          <div className="p-2 bg-purple-100 rounded-lg mb-2">
+            <RefreshCw className="w-6 h-6 text-purple-600" />
           </div>
+          <p className="text-sm font-medium text-gray-600">Cập nhật</p>
+          <p className="text-sm font-bold text-gray-900">{lastUpdate.toLocaleTimeString('vi-VN')}</p>
         </div>
       </div>
 
