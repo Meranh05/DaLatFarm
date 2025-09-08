@@ -195,7 +195,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
         {/* Collapse/Expand Button */}
         <button
           onClick={() => onToggleCollapse && onToggleCollapse(!isCollapsed)}
-          className="absolute right-1 top-20 bg-gray-800 text-gray-300 p-1 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
+          className="absolute right -1 top-20 bg-gray-800 text-gray-300 p-1 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
         >
           <ChevronRight 
             className={`w-4 h-4 transition-transform duration-300 ${
