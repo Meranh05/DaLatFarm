@@ -454,23 +454,31 @@ const AdminProducts = () => {
                       {new Date(product.createdAt || Date.now()).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="relative inline-block text-left">
-                        <details className="group">
-                          <summary className="list-none cursor-pointer inline-flex items-center gap-1 px-2 py-1 rounded-md hover:bg-gray-100">
-                            <MoreHorizontal className="w-5 h-5 text-gray-600" />
-                          </summary>
-                          <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-200 p-1 z-10">
-                            <button onClick={() => setEditingProduct(product)} className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
-                              <Edit className="w-4 h-4" /> Chỉnh sửa
-                            </button>
-                            <button onClick={async () => { await productsAPI.setHidden(product.id, !product.hidden); await loadProducts() }} className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 flex items-center gap-2">
-                              <EyeOff className="w-4 h-4" /> {product.hidden ? 'Hiện sản phẩm' : 'Ẩn sản phẩm'}
-                            </button>
-                            <button onClick={() => handleDeleteProduct(product.id)} className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 text-red-600 flex items-center gap-2">
-                              <Trash className="w-4 h-4" /> Xóa
-                            </button>
-                          </div>
-                        </details>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setEditingProduct(product)}
+                          className="px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-50 text-gray-700 flex items-center gap-1"
+                          title="Chỉnh sửa"
+                        >
+                          <Edit className="w-4 h-4" />
+                          <span className="hidden sm:inline">Chỉnh sửa</span>
+                        </button>
+                        <button
+                          onClick={async () => { await productsAPI.setHidden(product.id, !product.hidden); await loadProducts() }}
+                          className="px-2 py-1 rounded-md border border-gray-200 hover:bg-gray-50 text-gray-700 flex items-center gap-1"
+                          title={product.hidden ? 'Hiện sản phẩm' : 'Ẩn sản phẩm'}
+                        >
+                          <EyeOff className="w-4 h-4" />
+                          <span className="hidden sm:inline">{product.hidden ? 'Hiện' : 'Ẩn'}</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="px-2 py-1 rounded-md border border-red-200 hover:bg-red-50 text-red-600 flex items-center gap-1"
+                          title="Xóa"
+                        >
+                          <Trash className="w-4 h-4" />
+                          <span className="hidden sm:inline">Xóa</span>
+                        </button>
                       </div>
                     </td>
                   </tr>
