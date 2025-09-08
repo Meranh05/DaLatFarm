@@ -33,6 +33,15 @@ const ProductDetail = () => {
     incrementViews(id)
   }, [id, incrementViews])
 
+  // Scroll to page top whenever navigating to a related product (id changes)
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (_) {
+      window.scrollTo(0, 0)
+    }
+  }, [id])
+
   // Use images[] if available, otherwise fallback to single image
   const productImages = (product?.images && product.images.length > 0)
     ? product.images
