@@ -84,6 +84,17 @@ const AdminHeader = () => {
     }
   }, [loadNotifications])
 
+  // Close mobile menu when viewport grows to desktop to avoid layout bugs
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMenuOpen(false)
+      }
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
   // Keep unreadCount accurate based on notifications state
   useEffect(() => {
     setUnreadCount(notifications.filter(n => !n.isRead).length)
@@ -149,7 +160,7 @@ const AdminHeader = () => {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="flex items-center justify-between h-14">
           {/* Left side - Logo */}
           <div className="flex items-center">
@@ -297,13 +308,13 @@ const AdminHeader = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation (overlay dropdown, not affecting layout) */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4">
-            <div className="space-y-2">
+          <div className="lg:hidden absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-md py-4 z-40">
+            <div className="px-4 space-y-2">
               {/* Mobile Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Tìm kiếm..."
