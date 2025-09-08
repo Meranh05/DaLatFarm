@@ -8,12 +8,8 @@ const ProductContext = createContext()
 // Fixed categories (hardcoded)
 const DEFAULT_CATEGORIES = [
   'Bánh mứt, đồ khô đặc sản',
-  'Dịch vụ',
   'Hạt đặc sản, mật ong',
-  'Nguyên vật liệu',
   'Nông sản, dược liệu, quý hiếm',
-  'Quà lưu niệm',
-  'Sản phẩm khác',
   'Set quà, combo',
   'Trà, cà phê',
   'Trái cây sấy, mứt, nước cốt',

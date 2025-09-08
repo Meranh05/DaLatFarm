@@ -243,11 +243,11 @@ const Products = () => {
               {sortedProducts.length > 0 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <div className="relative rounded-full ring-1 ring-orange-300 hover:ring-orange-400 transition-colors">
+                      <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="appearance-none pl-3 pr-9 py-2 rounded-full text-sm bg-white border border-orange-300 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                         {[8,12,16,24].map(n => <option key={n} value={n}>Hiển thị {n}</option>)}
                       </select>
-                      <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <ChevronDown className="w-4 h-4 text-orange-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                     <div className="text-sm text-gray-600">Tổng <span className="font-semibold">{total}</span> sản phẩm</div>
                   </div>
@@ -264,7 +264,7 @@ const Products = () => {
                         {buildPageList().map((it, idx) => it === '...'
                           ? <span key={`e-${idx}`} className="px-2 text-gray-400">…</span>
                           : (
-                            <button key={it} onClick={()=>setPage(it)} className={`w-9 h-9 mx-0.5 rounded-lg text-sm border ${page===it ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-gray-200 hover:bg-gray-50 text-gray-700'}`}>{it}</button>
+                            <button key={it} onClick={()=>setPage(it)} className={`w-9 h-9 mx-0.5 rounded-lg text-sm border transition-colors ${page===it ? 'border-orange-400 bg-orange-50 text-orange-700' : 'border-gray-200 hover:border-orange-300 hover:bg-orange-50 text-gray-700'}`}>{it}</button>
                           )
                         )}
                       </div>
