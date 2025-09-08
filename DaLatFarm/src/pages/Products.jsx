@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
@@ -16,6 +16,8 @@ const Products = () => {
   const [sortOpen, setSortOpen] = useState(false)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(12)
+  const [pageSizeOpen, setPageSizeOpen] = useState(false)
+  const pageSizeRef = useRef(null)
 
   const sortOptions = [
     { key: 'featured', label: 'Nổi bật' },
@@ -79,6 +81,16 @@ const Products = () => {
       window.scrollTo(0, 0)
     }
   }, [page])
+
+  // Close custom page-size menu on outside click
+  useEffect(() => {
+    const onClick = (e) => {
+      if (!pageSizeRef.current) return
+      if (!pageSizeRef.current.contains(e.target)) setPageSizeOpen(false)
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
 
   // Pagination calculations
   const total = sortedProducts.length
@@ -243,11 +255,20 @@ const Products = () => {
               {sortedProducts.length > 0 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-4">
-                    <div className="relative rounded-full ring-1 ring-orange-300 hover:ring-orange-400 transition-colors">
-                      <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="appearance-none pl-3 pr-9 py-2 rounded-full text-sm bg-white border border-orange-300 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                        {[8,12,16,24].map(n => <option key={n} value={n}>Hiển thị {n}</option>)}
-                      </select>
-                      <ChevronDown className="w-4 h-4 text-orange-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <div className="relative" ref={pageSizeRef}>
+                      <button onClick={()=>setPageSizeOpen(!pageSizeOpen)} className="pl-3 pr-9 py-2 rounded-full text-sm bg-white border border-orange-300 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 hover:ring-orange-400">
+                        Hiển thị {pageSize}
+                        <ChevronDown className="w-4 h-4 text-orange-500 inline ml-2 -mt-0.5" />
+                      </button>
+                      {pageSizeOpen && (
+                        <div className="absolute z-20 mt-2 w-40 bg-white border border-orange-200 rounded-lg shadow-lg overflow-hidden">
+                          {[8,12,16,24].map(n => (
+                            <button key={n} onMouseDown={()=>{setPageSize(n); setPageSizeOpen(false)}} className={`w-full text-left px-4 py-2 text-sm transition-colors ${pageSize===n ? 'bg-orange-50 text-orange-700' : 'hover:bg-orange-50 hover:text-orange-700 text-gray-700'}`}>
+                              Hiển thị {n}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div className="text-sm text-gray-600">Tổng <span className="font-semibold">{total}</span> sản phẩm</div>
                   </div>
