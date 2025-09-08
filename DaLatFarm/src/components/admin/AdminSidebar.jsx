@@ -14,28 +14,21 @@ import {
   Mail
 } from 'lucide-react'
 import RealTimeStatus from './RealTimeStatus'
+import { db } from '../../config/firebase'
+import { collection, onSnapshot } from 'firebase/firestore'
 
 const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   const location = useLocation()
-  const [realTimeData, setRealTimeData] = useState({
-    products: 0,
-    users: 0,
-    events: 0,
-    views: 0
-  })
+  const [realTimeData, setRealTimeData] = useState({ products: 0, users: 0, events: 0 })
 
+  // Realtime counts from Firestore
   useEffect(() => {
-    // Simulate real-time data updates
-    const interval = setInterval(() => {
-      setRealTimeData(prev => ({
-        products: prev.products + Math.floor(Math.random() * 3),
-        users: prev.users + Math.floor(Math.random() * 2),
-        events: prev.events + Math.floor(Math.random() * 1),
-        views: prev.views + Math.floor(Math.random() * 10)
-      }))
-    }, 5000) // Update every 5 seconds
-
-    return () => clearInterval(interval)
+    const unsubs = [
+      onSnapshot(collection(db, 'products'), (snap) => setRealTimeData(prev => ({ ...prev, products: snap.size }))),
+      onSnapshot(collection(db, 'users'), (snap) => setRealTimeData(prev => ({ ...prev, users: snap.size }))),
+      onSnapshot(collection(db, 'events'), (snap) => setRealTimeData(prev => ({ ...prev, events: snap.size })))
+    ]
+    return () => unsubs.forEach(u => u && u())
   }, [])
 
   const navigation = [
@@ -158,7 +151,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
                     <>
                       <span className="ml-3 flex-1">{item.name}</span>
                       {item.badge !== null && item.badge > 0 && (
-                        <span className="ml-auto bg-red-500/90 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow">
+                        <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[28px] text-center shadow">
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
