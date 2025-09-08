@@ -71,6 +71,15 @@ const Products = () => {
     setPage(1)
   }, [searchTerm, selectedCategory, sortBy, viewMode])
 
+  // Scroll to top whenever page changes (smooth)
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (_) {
+      window.scrollTo(0, 0)
+    }
+  }, [page])
+
   // Pagination calculations
   const total = sortedProducts.length
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
