@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import { useProducts } from '../context/ProductContext'
-import { Filter, Grid, List, Search, RefreshCw, ChevronDown, Check } from 'lucide-react'
+import { Filter, Grid, List, Search, RefreshCw, ChevronDown, Check, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 const Products = () => {
   const { products, loading, categories, loadProducts } = useProducts()
@@ -221,12 +221,25 @@ const Products = () => {
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">Trang {page}/{totalPages} · {total} sản phẩm</div>
                   <div className="flex items-center space-x-3">
-                    <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="px-2 py-1 border border-gray-300 rounded-lg text-sm">
-                      {[8,12,16,24].map(n => <option key={n} value={n}>{n}/trang</option>)}
-                    </select>
-                    <div className="inline-flex border rounded-lg overflow-hidden">
-                      <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-3 py-1 text-sm disabled:opacity-50">«</button>
-                      <button disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="px-3 py-1 text-sm disabled:opacity-50">»</button>
+                    <div className="relative">
+                      <select value={pageSize} onChange={(e)=>setPageSize(Number(e.target.value))} className="appearance-none pl-3 pr-8 py-2 border border-gray-300 rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        {[8,12,16,24].map(n => <option key={n} value={n}>{n}/trang</option>)}
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                    <div className="inline-flex items-center bg-white border border-gray-300 rounded-full shadow-sm overflow-hidden">
+                      <button title="Trang đầu" disabled={page<=1} onClick={()=>setPage(1)} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white">
+                        <ChevronsLeft className="w-4 h-4" />
+                      </button>
+                      <button title="Trang trước" disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white border-l border-gray-200">
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button title="Trang sau" disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white border-l border-gray-200">
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      <button title="Trang cuối" disabled={page>=totalPages} onClick={()=>setPage(totalPages)} className="p-2.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white border-l border-gray-200">
+                        <ChevronsRight className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
