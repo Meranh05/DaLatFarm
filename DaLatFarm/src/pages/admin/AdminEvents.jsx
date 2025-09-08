@@ -344,7 +344,10 @@ const AdminEvents = () => {
                     <label className="block text-sm text-gray-700 mb-1">Ảnh (tuỳ chọn)</label>
                     <input type="file" accept="image/*" onChange={e=>onPickImage(e.target.files?.[0]||null)} className="w-full" />
                     {(imagePreview || form.image) && (
-                      <img src={imagePreview || form.image} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
+                      <div className="relative mt-2">
+                        <img src={imagePreview || form.image} alt="Preview" className="w-full h-32 object-cover rounded" />
+                        <button type="button" onClick={()=>{ setImageFile(null); setImagePreview(''); setForm(f=>({...f,image:''})) }} className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-white/90 border border-gray-300 text-gray-600 hover:text-red-600 shadow flex items-center justify-center">×</button>
+                      </div>
                     )}
                     {uploading && (
                       <div className="mt-2 text-xs text-gray-600">Đang tải ảnh... {progress}%</div>

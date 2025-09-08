@@ -104,10 +104,48 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || [])
-    const selected = files.slice(0, 5)
-    setImageFiles(selected)
-    Promise.all(selected.map(f => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f) })))
-      .then(previews => setImagesPreview(previews))
+    if (files.length === 0) return
+    // Remaining slots based on current previews
+    const remainingSlots = Math.max(0, 5 - imagesPreview.length)
+    const selected = files.slice(0, remainingSlots)
+
+    if (selected.length === 0) return
+
+    // Append to current new-file list (not exceeding 5 in total)
+    setImageFiles(prev => {
+      const next = [...prev, ...selected]
+      return next.slice(0, Math.max(0, 5 - (formData.images?.length || 0)))
+    })
+
+    // Append previews for selected files
+    Promise.all(selected.map(f => new Promise(res => {
+      const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f)
+    })))
+      .then(previews => setImagesPreview(prev => [...prev, ...previews].slice(0, 5)))
+  }
+
+  const removePreviewAt = (idx) => {
+    setImagesPreview(prev => prev.filter((_, i) => i !== idx))
+
+    setFormData(prev => {
+      const existingCount = Array.isArray(prev.images) ? prev.images.length : 0
+      // If removing an existing image (within existing count), drop it from formData.images
+      if (idx < existingCount) {
+        const nextExisting = prev.images.filter((_, i) => i !== idx)
+        return { ...prev, images: nextExisting }
+      }
+      return prev
+    })
+
+    // If removing a newly added file, compute its index in imageFiles
+    setImageFiles(prev => {
+      const existingCount = Array.isArray(formData.images) ? formData.images.length : 0
+      const fileIdx = idx - existingCount
+      if (fileIdx >= 0) {
+        return prev.filter((_, i) => i !== fileIdx)
+      }
+      return prev
+    })
   }
 
   const uploadMultiple = async (files) => {
@@ -140,10 +178,11 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
     e.preventDefault()
     if (!validateForm()) return
     try {
-      let images = formData.images || []
-      if (imageFiles && imageFiles.length > 0) {
-        images = await uploadMultiple(imageFiles)
-      }
+      // Keep remaining existing URLs first
+      const existingUrls = Array.isArray(formData.images) ? [...formData.images] : []
+      // Upload any new files and append
+      const uploadedUrls = (imageFiles && imageFiles.length > 0) ? await uploadMultiple(imageFiles) : []
+      let images = [...existingUrls, ...uploadedUrls].slice(0, 5)
       const features = featuresText.split('\n').map(s => s.trim()).filter(Boolean)
       const submitData = { 
         ...formData, 
@@ -271,6 +310,7 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
                   {imagesPreview.map((src, idx) => (
                     <div key={idx} className="relative">
                       <img src={src} alt={`Preview-${idx}`} className="w-24 h-24 object-cover rounded-lg border border-gray-300" />
+                      <button type="button" onClick={() => removePreviewAt(idx)} className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white/90 border border-gray-300 text-gray-600 hover:text-red-600 shadow flex items-center justify-center">×</button>
                     </div>
                   ))}
                 </div>
