@@ -152,12 +152,14 @@ const ProductForm = ({ isOpen, onClose, onSubmit, product, categories, isEditing
     if (!files || files.length === 0) return []
     setUploading(true)
     try {
-      const urls = []
-      for (let i = 0; i < files.length && i < 5; i++) {
-        const compressed = await imageCompression(files[i], { maxSizeMB: 0.5, maxWidthOrHeight: 1400, useWebWorker: true })
-        const { imageUrl } = await uploadAPI.uploadImage(compressed, (pct) => setProgress(pct))
-        urls.push(imageUrl)
-      }
+      // Compress in parallel, then upload in parallel for speed
+      const limited = files.slice(0, 5)
+      const compressedFiles = await Promise.all(limited.map((f) => imageCompression(f, {
+        maxSizeMB: 0.7,
+        maxWidthOrHeight: 1600,
+        useWebWorker: true
+      })))
+      const urls = await Promise.all(compressedFiles.map((cf) => uploadAPI.uploadImage(cf, (pct) => setProgress(pct)).then(r => r.imageUrl)))
       return urls
     } finally {
       setUploading(false)

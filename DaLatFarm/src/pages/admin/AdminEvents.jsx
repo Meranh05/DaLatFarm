@@ -15,6 +15,7 @@ import {
   X
 } from 'lucide-react'
 import { eventsAPI, uploadAPI } from '../../services/apiService'
+import imageCompression from 'browser-image-compression'
 import { db } from '../../config/firebase'
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
 
@@ -130,7 +131,12 @@ const AdminEvents = () => {
     try {
       if (imageFile) {
         setUploading(true)
-        const { imageUrl: url } = await uploadAPI.uploadImage(imageFile, (pct) => setProgress(pct))
+        const compressed = await imageCompression(imageFile, {
+          maxSizeMB: 0.8,
+          maxWidthOrHeight: 1600,
+          useWebWorker: true
+        })
+        const { imageUrl: url } = await uploadAPI.uploadImage(compressed, (pct) => setProgress(pct))
         imageUrl = url
       }
     } catch (err) {
