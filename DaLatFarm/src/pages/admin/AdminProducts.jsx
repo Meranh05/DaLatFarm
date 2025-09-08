@@ -419,29 +419,29 @@ const AdminProducts = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[34%]">
                     Sản phẩm
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
                     Danh mục
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[14%]">
                     Trạng thái
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[8%]">
                     Lượt xem
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[12%]">
                     Ngày tạo
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[12%]">
                     Thao tác
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedProducts.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
+                {paginatedProducts.map((product, idx) => (
+                  <tr key={product.id} className="hover:bg-gray-50 even:bg-gray-50/50">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex items-center">
                         <input
@@ -450,21 +450,21 @@ const AdminProducts = () => {
                           onChange={() => handleSelectProduct(product.id)}
                           className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 mr-3"
                         />
-                        <div className="flex-shrink-0 h-12 w-12">
+                        <div className="flex-shrink-0 h-10 w-10">
                           <img
-                            className="h-12 w-12 rounded-lg object-cover"
+                            className="h-10 w-10 rounded-lg object-cover"
                             src={product.image}
                             alt={product.name}
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 max-w-[280px] truncate">{product.name}</div>
-                          <div className="text-sm text-gray-500 line-clamp-2">{product.description}</div>
+                          <div className="text-sm font-medium text-gray-900 max-w-[360px] truncate" title={product.name}>{product.name}</div>
+                          <div className="text-sm text-gray-500 line-clamp-1 max-w-[560px]" title={product.description}>{product.description}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[200px] truncate">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 max-w-[240px] truncate" title={product.category}>
                         {product.category}
                       </span>
                     </td>
@@ -473,7 +473,7 @@ const AdminProducts = () => {
                         {getStatusText(product)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 text-right">
                       {product.views || 0}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
