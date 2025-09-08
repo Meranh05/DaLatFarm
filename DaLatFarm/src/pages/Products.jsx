@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import { useProducts } from '../context/ProductContext'
@@ -7,6 +7,7 @@ import { Filter, Grid, List, Search, RefreshCw, ChevronDown, Check, ChevronLeft,
 
 const Products = () => {
   const { products, loading, categories, loadProducts } = useProducts()
+  const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [viewMode, setViewMode] = useState('grid')
@@ -26,8 +27,10 @@ const Products = () => {
   ]
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const s = searchTerm.toLowerCase()
+    const matchesSearch = product.name.toLowerCase().includes(s) ||
+                         (product.description || '').toLowerCase().includes(s) ||
+                         (product.brand || '').toLowerCase().includes(s)
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
     const notHidden = !product.hidden
     return notHidden && matchesSearch && matchesCategory
@@ -67,6 +70,15 @@ const Products = () => {
   }
 
   const currentSortLabel = sortOptions.find(o => o.key === sortBy)?.label || 'Sắp xếp'
+
+  // Seed filters from URL (?search=...&category=...)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const s = params.get('search')
+    const cat = params.get('category')
+    if (s !== null) setSearchTerm(s)
+    if (cat !== null) setSelectedCategory(cat)
+  }, [location.search])
 
   // Reset to first page when filters change
   useEffect(() => {
