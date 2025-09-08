@@ -101,7 +101,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   }
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-60'} transition-all duration-300 ease-in-out hidden lg:block sticky top-16 self-start`}>
+    <div className={`${isCollapsed ? 'w-14' : 'w-100'} transition-all duration-300 ease-in-out hidden lg:block sticky top-16 self-start`}>
       <div className="flex flex-col h-[calc(100vh-4rem)] bg-gradient-to-b from-gray-900 via-[#12151b] to-gray-900">
         {/* Logo */}
         <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900/95 border-b border-white/5">
