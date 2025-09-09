@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Activity, Wifi, WifiOff, Eye, Package } from 'lucide-react'
 import { useProducts } from '../../context/ProductContext'
 
+// Component: Hiển thị trạng thái real-time (kết nối mạng + số liệu nhanh)
+// - Trễ 3s rồi mới xuất hiện để tránh làm phiền khi trang tải nhanh
+// - Click vào nút tròn để mở panel chi tiết
 const RealTimeIndicator = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [isVisible, setIsVisible] = useState(false)
@@ -9,6 +12,8 @@ const RealTimeIndicator = () => {
   
   const { lastUpdate, realTimeStats } = useProducts()
 
+  // useEffect: Đăng ký lắng nghe sự kiện online/offline của trình duyệt.
+  // Đồng thời hẹn giờ 3s để hiển thị chỉ báo.
   useEffect(() => {
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
@@ -26,11 +31,12 @@ const RealTimeIndicator = () => {
     }
   }, [])
 
+  // Nếu chưa đến thời điểm hiển thị thì không render gì.
   if (!isVisible) return null
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
-      {/* Main Indicator */}
+      {/* Nút chính (chấm tròn) */}
       <button
         onClick={() => setShowDetails(!showDetails)}
         className={`group relative p-3 rounded-full shadow-lg transition-all duration-300 ${
@@ -40,16 +46,16 @@ const RealTimeIndicator = () => {
       >
         <Activity className="w-5 h-5 animate-pulse" />
         
-        {/* Pulse effect */}
+        {/* Hiệu ứng nhịp (pulse) */}
         <div className={`absolute inset-0 rounded-full ${
           isOnline ? 'bg-green-400' : 'bg-red-400'
         } animate-ping opacity-75`}></div>
       </button>
 
-      {/* Details Panel */}
+      {/* Panel chi tiết khi bật */}
       {showDetails && (
         <div className="absolute bottom-16 left-0 bg-white rounded-lg shadow-xl border border-gray-200 p-4 min-w-[280px]">
-          {/* Header */}
+          {/* Header của panel */}
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-gray-900">Trạng thái Website</h3>
             <button
@@ -60,7 +66,7 @@ const RealTimeIndicator = () => {
             </button>
           </div>
 
-          {/* Connection Status */}
+          {/* Dòng trạng thái mạng */}
           <div className="flex items-center space-x-2 mb-3">
             <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
             <span className="text-xs text-gray-600">
@@ -73,12 +79,12 @@ const RealTimeIndicator = () => {
             )}
           </div>
 
-          {/* Last Update */}
+          {/* Thời điểm cập nhật cuối cùng từ context */}
           <div className="text-xs text-gray-500 mb-3">
             Cập nhật: {lastUpdate ? new Date(lastUpdate).toLocaleTimeString('vi-VN') : 'N/A'}
           </div>
 
-          {/* Quick Stats */}
+          {/* Số liệu nhanh: tổng sản phẩm, tổng lượt xem (lấy từ context) */}
           <div className="grid grid-cols-2 gap-2 text-xs mb-3">
             <div className="bg-blue-50 p-2 rounded">
               <div className="font-medium text-blue-900">{realTimeStats.totalProducts}</div>
@@ -96,12 +102,12 @@ const RealTimeIndicator = () => {
             </div>
           </div>
 
-          {/* Status Message */}
+          {/* Thông điệp trạng thái */}
           <div className="text-xs text-center p-2 bg-green-50 text-green-700 rounded">
             Website đang hoạt động với dữ liệu real-time
           </div>
 
-          {/* Auto-refresh indicator */}
+          {/* Phần chú thích việc tự động cập nhật */}
           <div className="mt-3 pt-2 border-t border-gray-200">
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>Tự động cập nhật</span>
@@ -114,7 +120,7 @@ const RealTimeIndicator = () => {
         </div>
       )}
 
-      {/* Click outside to close */}
+      {/* Overlay: click ngoài để đóng panel */}
       {showDetails && (
         <div 
           className="fixed inset-0 z-40" 

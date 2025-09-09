@@ -41,7 +41,7 @@ const FeaturedProducts = () => {
           ))}
         </div>
 
-        {/* Nút Xem tất cả sản phẩm - Đúng như thiết kế */}
+        {/* Nút Xem tất cả sản phẩm */}
         <div className="text-center mt-16">
           <Link
             to="/products"

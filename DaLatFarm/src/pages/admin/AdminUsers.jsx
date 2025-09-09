@@ -27,16 +27,6 @@ const AdminUsers = () => {
       createdAt: '2025-08-23',
       lastLogin: '2025-09-3'
     },
-    //Test user
-    {
-      id: 2,
-      name: 'User',
-      email: 'user@dalatfarm.com',
-      role: 'user',
-      status: 'active',
-      createdAt: '2025-08-23',
-      lastLogin: '2025-09-3'
-    }
   ]
 
   const roles = [
