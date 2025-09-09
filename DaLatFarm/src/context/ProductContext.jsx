@@ -111,14 +111,20 @@ export const ProductProvider = ({ children }) => {
     }
   }, [])
 
+  // Danh sách nổi bật mặc định (tối đa 6)
   const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 6), [products])
 
-  // Tốp 4 sản phẩm xem nhiều nhất để highlight trang chủ
+  // Tốp 4 sản phẩm xem nhiều nhất hôm nay (ưu tiên nổi bật); fallback tổng views
   const topViewedProducts = useMemo(() => {
     const copied = Array.isArray(products) ? [...products] : []
-    return copied
-      .sort((a, b) => (b?.views || 0) - (a?.views || 0))
-      .slice(0, 4)
+    const dayStr = new Date().toISOString().slice(0, 10)
+    const score = (p) => Number((p?.viewsByDay && p.viewsByDay[dayStr]) || 0)
+    const sortedByToday = copied.sort((a, b) => score(b) - score(a))
+    const topToday = sortedByToday.filter(p => p.featured).slice(0, 4)
+    if (topToday.length >= 4) return topToday
+    const fill = sortedByToday.filter(p => !p.featured).slice(0, 4 - topToday.length)
+    const result = [...topToday, ...fill]
+    return result.length > 0 ? result : (Array.isArray(products) ? [...products].sort((a,b)=> (b?.views||0)-(a?.views||0)).slice(0,4) : [])
   }, [products])
 
   const productsByCategory = useMemo(() => {

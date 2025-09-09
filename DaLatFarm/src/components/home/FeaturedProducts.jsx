@@ -4,8 +4,9 @@ import { useProducts } from '../../context/ProductContext'
 
 const FeaturedProducts = () => {
   const { featuredProducts, topViewedProducts } = useProducts()
+  // Hiển thị tối đa 4 sản phẩm nổi bật có lượt xem hôm nay cao nhất (đã xử lý trong context)
   const items = (featuredProducts && featuredProducts.length > 0)
-    ? featuredProducts.filter(p => !p.hidden).slice(0, 4)
+    ? topViewedProducts.filter(p => p.featured && !p.hidden).slice(0, 4)
     : topViewedProducts.filter(p => !p.hidden)
 
   return (

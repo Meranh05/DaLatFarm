@@ -32,19 +32,41 @@ const AdminProducts = () => {
   const [lastUpdate, setLastUpdate] = useState(new Date())
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [statusFilter, setStatusFilter] = useState('all') // all | featured | normal
+  const [sortBy, setSortBy] = useState('createdAt') // createdAt | viewsToday | viewsTotal | featured
 
   // Filtered products
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesStatus = statusFilter === 'all'
+      ? true
+      : statusFilter === 'featured'
+        ? !!product.featured
+        : !product.featured
+    return matchesSearch && matchesCategory && matchesStatus
   })
 
-  // Sort products by creation date (newest first)
-  const sortedProducts = [...filteredProducts].sort((a, b) => 
-    new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-  )
+  // Sort theo tiêu chí: mới nhất / lượt xem hôm nay / tổng lượt xem / ưu tiên nổi bật
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'viewsToday') {
+      const day = new Date().toISOString().slice(0, 10)
+      const av = Number((a.viewsByDay && a.viewsByDay[day]) || 0)
+      const bv = Number((b.viewsByDay && b.viewsByDay[day]) || 0)
+      return bv - av
+    }
+    if (sortBy === 'viewsTotal') {
+      return (b.views || 0) - (a.views || 0)
+    }
+    if (sortBy === 'featured') {
+      const af = a.featured ? 1 : 0
+      const bf = b.featured ? 1 : 0
+      if (bf !== af) return bf - af
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    }
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+  })
 
   // Product actions via context
   const addProduct = async (productData) => {
@@ -307,6 +329,29 @@ const AdminProducts = () => {
                   {category.name} ({products.filter(p => p.category === category.name).length})
                 </option>
               ))}
+            </select>
+
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="featured">Nổi bật</option>
+              <option value="normal">Bình thường</option>
+            </select>
+
+            {/* Sort */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="createdAt">Mới nhất</option>
+              <option value="viewsToday">Xem nhiều hôm nay</option>
+              <option value="viewsTotal">Tổng lượt xem</option>
+              <option value="featured">Ưu tiên nổi bật</option>
             </select>
 
             {/* Clear Filters */}

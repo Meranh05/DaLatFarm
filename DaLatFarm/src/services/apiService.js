@@ -136,9 +136,15 @@ export const productsAPI = {
     try { await activitiesAPI.log({ type: 'product:delete', refId: id, title: 'Xóa sản phẩm', message: 'Đã xóa một sản phẩm' }) } catch (_) {}
     return { id }
   },
+  // Tăng tổng lượt xem và lượt xem theo ngày (viewsByDay.YYYY-MM-DD)
   incrementViews: async (id) => {
     const refDoc = doc(db, 'products', id)
-    await updateDoc(refDoc, { views: increment(1) })
+    const dayStr = new Date().toISOString().slice(0, 10)
+    await updateDoc(refDoc, {
+      views: increment(1),
+      [`viewsByDay.${dayStr}`]: increment(1),
+      updatedAt: Date.now()
+    })
     return { id }
   },
   // Register view once per device per day using a transaction + subcollection guard
