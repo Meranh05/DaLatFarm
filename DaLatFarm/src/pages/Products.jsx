@@ -26,6 +26,7 @@ const Products = () => {
     { key: 'date', label: 'Mới nhất' }
   ]
 
+  // Lọc theo ô tìm kiếm, danh mục và trạng thái ẩn/hiện
   const filteredProducts = products.filter(product => {
     const s = searchTerm.toLowerCase()
     const matchesSearch = product.name.toLowerCase().includes(s) ||
@@ -80,12 +81,12 @@ const Products = () => {
     if (cat !== null) setSelectedCategory(cat)
   }, [location.search])
 
-  // Reset to first page when filters change
+  // Reset về trang 1 mỗi khi thay đổi bộ lọc/tìm kiếm/sắp xếp/chế độ hiển thị
   useEffect(() => {
     setPage(1)
   }, [searchTerm, selectedCategory, sortBy, viewMode])
 
-  // Scroll to top whenever page changes (smooth)
+  // Khi chuyển trang, cuộn lên đầu trang (mượt)
   useEffect(() => {
     try {
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -94,7 +95,7 @@ const Products = () => {
     }
   }, [page])
 
-  // Close custom page-size menu on outside click
+  // Đóng dropdown chọn số lượng khi click ra ngoài
   useEffect(() => {
     const onClick = (e) => {
       if (!pageSizeRef.current) return

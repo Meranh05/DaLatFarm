@@ -3,9 +3,10 @@ import { productsAPI } from '../services/apiService'
 import { db } from '../config/firebase'
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore'
 
+// Context cung cấp dữ liệu/sự kiện liên quan đến Sản phẩm & Danh mục cho toàn app
 const ProductContext = createContext()
 
-// Fixed categories (hardcoded)
+// Danh mục cố định (không CRUD): dùng để hiển thị lọc / nhóm sản phẩm
 const DEFAULT_CATEGORIES = [
   'Bánh mứt, đồ khô đặc sản',
   'Hạt đặc sản, mật ong',
@@ -22,14 +23,14 @@ export const ProductProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Products
+  // Hàm: Tải toàn bộ sản phẩm từ Firestore (qua apiService)
   const loadProducts = useCallback(async () => {
     const data = await productsAPI.getAll()
     setProducts(data)
     return data
   }, [])
 
-  // Categories are fixed in code
+  // Hàm: Thiết lập lại danh mục mặc định (không đọc Firestore)
   const loadCategories = useCallback(async () => {
     setCategories(DEFAULT_CATEGORIES)
     return DEFAULT_CATEGORIES
@@ -39,8 +40,8 @@ export const ProductProvider = ({ children }) => {
     setCategories(DEFAULT_CATEGORIES)
   }, [])
 
+  // CRUD sản phẩm: Viết vào DB, phần UI sẽ được cập nhật bởi onSnapshot
   const addProduct = useCallback(async (productData) => {
-    // Write only; let onSnapshot update state to avoid duplicates
     return await productsAPI.create(productData)
   }, [])
 
@@ -52,15 +53,16 @@ export const ProductProvider = ({ children }) => {
     await productsAPI.delete(id)
   }, [])
 
+  // Tăng lượt xem sản phẩm khi vào trang chi tiết
   const incrementViews = useCallback(async (id) => {
-    // Count every visit to the product detail page
     try {
       await productsAPI.incrementViews(id)
     } catch (_) {
-      // ignore failures to avoid blocking UI
+      // Bỏ qua lỗi để không chặn UI
     }
   }, [])
 
+  // Helper: Tạo ID thiết bị ổn định (đơn giản) lưu trong localStorage
   function getStableDeviceId() {
     const key = 'pv:deviceId'
     let id = localStorage.getItem(key)
@@ -80,7 +82,7 @@ export const ProductProvider = ({ children }) => {
     return id
   }
 
-  // Category mutations are disabled (fixed list)
+  // Các hàm dưới đây vô hiệu hoá mutate danh mục (vì danh mục là cố định)
   const addCategory = useCallback(async () => DEFAULT_CATEGORIES, [])
   const updateCategory = useCallback(async () => DEFAULT_CATEGORIES, [])
   const deleteCategory = useCallback(async () => DEFAULT_CATEGORIES, [])
@@ -99,7 +101,7 @@ export const ProductProvider = ({ children }) => {
     })()
   }, [loadCategories, loadProducts])
 
-  // Realtime products subscription
+  // Đăng ký lắng nghe realtime changes cho bảng products
   useEffect(() => {
     const unsubProducts = onSnapshot(query(collection(db, 'products'), orderBy('createdAt', 'desc')), (snap) => {
       setProducts(snap.docs.map(d => ({ id: d.id, ...d.data() })))
@@ -111,7 +113,7 @@ export const ProductProvider = ({ children }) => {
 
   const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 6), [products])
 
-  // Top 4 most viewed products for homepage highlight
+  // Tốp 4 sản phẩm xem nhiều nhất để highlight trang chủ
   const topViewedProducts = useMemo(() => {
     const copied = Array.isArray(products) ? [...products] : []
     return copied

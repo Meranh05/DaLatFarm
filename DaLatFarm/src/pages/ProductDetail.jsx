@@ -12,7 +12,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Set product when products list updates
+  // Khi danh sách sản phẩm cập nhật, tìm sản phẩm theo id từ URL
   useEffect(() => {
     const foundProduct = products.find(p => p.id == id)
     if (foundProduct) {
@@ -24,7 +24,7 @@ const ProductDetail = () => {
     }
   }, [id, products])
 
-  // Increment views on each visit to the detail page (guard against React StrictMode double-invoke)
+  // Tăng lượt xem khi vào trang chi tiết (tránh đếm đôi ở StrictMode bằng useRef)
   const lastIncIdRef = useRef(null)
   useEffect(() => {
     if (!id) return
@@ -33,7 +33,7 @@ const ProductDetail = () => {
     incrementViews(id)
   }, [id, incrementViews])
 
-  // Scroll to page top whenever navigating to a related product (id changes)
+  // Khi đổi id (chuyển sản phẩm khác), cuộn lên đầu trang
   useEffect(() => {
     try {
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -42,7 +42,7 @@ const ProductDetail = () => {
     }
   }, [id])
 
-  // Use images[] if available, otherwise fallback to single image
+  // Ưu tiên dùng mảng images[]; nếu không có thì dùng ảnh đơn image
   const productImages = (product?.images && product.images.length > 0)
     ? product.images
     : (product?.image ? [product.image] : [])
