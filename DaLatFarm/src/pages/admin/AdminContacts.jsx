@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { messagesAPI } from '../../services/apiService'
 import { Mail, Phone, User, Search, RefreshCw, Eye, X, Filter, CheckCircle2, Clock, AlertCircle, Download } from 'lucide-react'
+import * as XLSX from 'xlsx'
+
+// Trang quản trị Liên hệ: xem, lọc, phân trang, cập nhật trạng thái, xuất báo cáo CSV/XLSX
 
 const AdminContacts = () => {
   const [loading, setLoading] = useState(true)
@@ -63,6 +66,24 @@ const AdminContacts = () => {
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
+  }
+
+  // Xuất XLSX: 1 sheet "LienHe" với tiêu đề tiếng Việt
+  const exportXlsx = (rows) => {
+    const header = ['Họ tên','Email','Điện thoại','Chủ đề','Nội dung','Trạng thái','Thời gian']
+    const data = rows.map(m => [
+      m.name || 'Khách',
+      m.email || '',
+      m.phone || '',
+      m.subject || '',
+      m.message || '',
+      m.status || 'new',
+      new Date(m.createdAt||Date.now()).toLocaleString('vi-VN')
+    ])
+    const ws = XLSX.utils.aoa_to_sheet([header, ...data])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'LienHe')
+    XLSX.writeFile(wb, `contacts_${Date.now()}.xlsx`)
   }
 
   const filtered = items.filter((m) => {
@@ -188,7 +209,10 @@ const AdminContacts = () => {
             <button disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="px-3 py-1 text-sm disabled:opacity-50">»</button>
           </div>
           <button onClick={()=>exportCsv(filtered)} className="px-3 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-black inline-flex items-center space-x-1">
-            <Download className="w-4 h-4" /><span>Xuất CSV</span>
+            <Download className="w-4 h-4" /><span>CSV</span>
+          </button>
+          <button onClick={()=>exportXlsx(filtered)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 inline-flex items-center space-x-1">
+            <Download className="w-4 h-4" /><span>XLSX</span>
           </button>
         </div>
       </div>

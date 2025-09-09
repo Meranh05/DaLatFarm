@@ -3,6 +3,7 @@ import { Search, Filter, Plus, Edit, Trash, Eye, Grid, List, Download, RefreshCw
 import ProductForm from '../../components/admin/ProductForm'
 import { useProducts } from '../../context/ProductContext'
 import { productsAPI } from '../../services/apiService'
+import * as XLSX from 'xlsx'
 
 // Trang quản trị Sản phẩm: liệt kê, lọc, phân trang, CRUD, ẩn/hiện
 // Lưu ý: Xuất CSV có BOM UTF-8 để Excel hiển thị tiếng Việt đúng
@@ -143,6 +144,24 @@ const AdminProducts = () => {
     link.href = URL.createObjectURL(blob)
     link.download = `products_${new Date().toISOString().split('T')[0]}.csv`
     link.click()
+  }
+
+  // Xuất XLSX: 1 sheet "SanPham" với tiêu đề tiếng Việt
+  const exportProductsXlsx = () => {
+    const header = ['ID', 'Tên sản phẩm', 'Danh mục', 'Mô tả', 'Lượt xem', 'Nổi bật', 'Ngày tạo']
+    const rows = sortedProducts.map(p => [
+      p.id,
+      p.name,
+      p.category,
+      p.description,
+      p.views || 0,
+      p.featured ? 'Có' : 'Không',
+      new Date(p.createdAt || Date.now()).toLocaleDateString('vi-VN')
+    ])
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'SanPham')
+    XLSX.writeFile(wb, `products_${new Date().toISOString().split('T')[0]}.xlsx`)
   }
 
   const showNotification = (message, type = 'info') => {
@@ -311,7 +330,14 @@ const AdminProducts = () => {
               className="btn-outline flex items-center"
             >
               <Download className="w-4 h-4 mr-2" />
-              Xuất CSV
+              CSV
+            </button>
+            <button
+              onClick={exportProductsXlsx}
+              className="btn-outline flex items-center"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              XLSX
             </button>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Hiển thị</span>
