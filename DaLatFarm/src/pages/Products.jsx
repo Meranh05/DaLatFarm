@@ -5,6 +5,8 @@ import Footer from '../components/layout/Footer'
 import { useProducts } from '../context/ProductContext'
 import { Filter, Grid, List, Search, RefreshCw, ChevronDown, Check, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
+// Trang danh sách sản phẩm công khai: lọc, tìm kiếm, sắp xếp, phân trang client
+// Ghi chú: ẩn sản phẩm hidden, seed tham số từ URL, scroll-top khi đổi trang
 const Products = () => {
   const { products, loading, categories, loadProducts } = useProducts()
   const location = useLocation()

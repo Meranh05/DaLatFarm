@@ -7,6 +7,8 @@ import { useProducts } from '../context/ProductContext'
 import { productsAPI } from '../services/apiService'
 import { Search as SearchIcon } from 'lucide-react'
 
+// Trang kết quả tìm kiếm: tải dữ liệu, lọc theo từ khóa q (tên/mô tả/danh mục)
+// Ghi chú: ưu tiên dữ liệu context; fallback API nếu context rỗng; hiển thị loading/empty
 const Search = () => {
   const [searchParams] = useSearchParams()
   const { products: allProducts, categories } = useProducts()

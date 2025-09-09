@@ -5,6 +5,8 @@ import Footer from '../components/layout/Footer'
 import { useProducts } from '../context/ProductContext'
 import { Package, Leaf, Award, Info, ArrowRight, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react'
 
+// Trang chi tiết sản phẩm: hiển thị thông tin, ảnh, đặc tính, tăng lượt xem
+// Ghi chú: cuộn lên đầu khi đổi sản phẩm, brand click chuyển sang /products?search=brand
 const ProductDetail = () => {
   const { id } = useParams()
   const { products, incrementViews } = useProducts()

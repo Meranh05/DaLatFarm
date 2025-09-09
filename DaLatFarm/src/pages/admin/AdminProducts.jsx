@@ -4,6 +4,9 @@ import ProductForm from '../../components/admin/ProductForm'
 import { useProducts } from '../../context/ProductContext'
 import { productsAPI } from '../../services/apiService'
 
+// Trang quản trị Sản phẩm: liệt kê, lọc, phân trang, CRUD, ẩn/hiện
+// Lưu ý: Xuất CSV có BOM UTF-8 để Excel hiển thị tiếng Việt đúng
+
 const AdminProducts = () => {
   // Use global context (realtime onSnapshot)
   const {
@@ -121,21 +124,21 @@ const AdminProducts = () => {
     )
   }
 
+  // Xuất CSV với BOM để Excel nhận UTF-8, tiêu đề/giá trị tiếng Việt rõ ràng
   const exportProducts = () => {
-    const csvContent = [
-      ['ID', 'Tên sản phẩm', 'Danh mục', 'Mô tả', 'Lượt xem', 'Nổi bật', 'Ngày tạo'],
-      ...sortedProducts.map(p => [
-        p.id,
-        p.name,
-        p.category,
-        p.description,
-        p.views || 0,
-        p.featured ? 'Có' : 'Không',
-        new Date(p.createdAt || Date.now()).toLocaleDateString('vi-VN')
-      ])
-    ].map(row => row.map(field => `"${field}"`).join(',')).join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const header = ['ID', 'Tên sản phẩm', 'Danh mục', 'Mô tả', 'Lượt xem', 'Nổi bật', 'Ngày tạo']
+    const rows = sortedProducts.map(p => [
+      p.id,
+      p.name,
+      p.category,
+      p.description,
+      p.views || 0,
+      p.featured ? 'Có' : 'Không',
+      new Date(p.createdAt || Date.now()).toLocaleDateString('vi-VN')
+    ])
+    const escape = (v) => '"' + String(v ?? '').replaceAll('"','""') + '"'
+    const csv = [header, ...rows].map(r => r.map(escape).join(',')).join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
     link.download = `products_${new Date().toISOString().split('T')[0]}.csv`

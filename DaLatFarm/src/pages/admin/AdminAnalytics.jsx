@@ -16,6 +16,9 @@ import { useProducts } from '../../context/ProductContext'
 import { eventsAPI, statsAPI } from '../../services/apiService'
 import * as XLSX from 'xlsx'
 
+// Trang Thống kê & Phân tích: tổng quan, xu hướng, danh mục, top sản phẩm, lượt xem theo tháng
+// Ghi chú: Hàm xuất CSV thêm BOM UTF-8 và tiêu đề tiếng Việt; XLSX nhiều sheet
+
 const AdminAnalytics = () => {
   const { products } = useProducts()
   const [isLoading, setIsLoading] = useState(true)
