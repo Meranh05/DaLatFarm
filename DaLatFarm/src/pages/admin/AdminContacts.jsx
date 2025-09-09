@@ -38,8 +38,9 @@ const AdminContacts = () => {
   }, [selected])
 
   const escapeCsv = (s='') => '"' + String(s).replaceAll('"','""') + '"'
+  // Xuất CSV với BOM để Excel hiển thị tiếng Việt đúng
   const exportCsv = (rows) => {
-    const header = ['Name','Email','Phone','Subject','Message','Status','CreatedAt']
+    const header = ['Họ tên','Email','Điện thoại','Chủ đề','Nội dung','Trạng thái','Thời gian']
     const lines = [header.join(',')]
     rows.forEach(m => {
       lines.push([
@@ -49,10 +50,11 @@ const AdminContacts = () => {
         escapeCsv(m.subject||''),
         escapeCsv(m.message||''),
         escapeCsv(m.status||'new'),
-        escapeCsv(new Date(m.createdAt||Date.now()).toISOString())
+        escapeCsv(new Date(m.createdAt||Date.now()).toLocaleString('vi-VN'))
       ].join(','))
     })
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+    const csv = lines.join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
