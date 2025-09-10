@@ -254,67 +254,7 @@ const Contact = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* FAQ Section */}
-        <section className="py-16 bg-white">
-          <div className="container-responsive">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Câu hỏi thường gặp
-              </h2>
-              <p className="text-lg text-gray-600">
-                Những câu hỏi thường gặp về sản phẩm và dịch vụ của chúng tôi
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Làm thế nào để đặt hàng?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Bạn có thể đặt hàng trực tuyến qua website hoặc gọi điện thoại 
-                    đến hotline của chúng tôi.
-                  </p>
-                </div>
-
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Thời gian giao hàng là bao lâu?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Thời gian giao hàng từ 1-3 ngày tùy thuộc vào địa điểm 
-                    và phương thức vận chuyển.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Có chính sách đổi trả không?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Chúng tôi có chính sách đổi trả trong vòng 7 ngày 
-                    nếu sản phẩm có vấn đề về chất lượng.
-                  </p>
-                </div>
-
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Sản phẩm có đảm bảo chất lượng không?
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Tất cả sản phẩm đều được kiểm định chất lượng nghiêm ngặt 
-                    và có giấy chứng nhận an toàn thực phẩm.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        </div>       
       </main>
 
       <Footer />
