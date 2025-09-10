@@ -39,12 +39,7 @@ VITE_CLOUDINARY_UPLOAD_PRESET=...
      - firebase use YOUR_FIREBASE_PROJECT_ID
      - firebase deploy --only hosting
 
-6) Admin login (demo)
-- Username: admin
-- Password: TeamDaLatFarm
-- Note: This is demo-only (localStorage). For production, switch to Firebase Auth and set admin claims to match security rules.
-
-7) Post-deploy checks
+6) Post-deploy checks
 - Images load (Storage/Cloudinary CORS ok)
 - Contact form writes to messages and triggers notifications
 - Admin receives notifications and can view contacts at /admin/contacts
