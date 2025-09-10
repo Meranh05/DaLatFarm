@@ -1,17 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Header from '../components/layout/Header'
 import Footer from '../components/layout/Footer'
 import { useProducts } from '../context/ProductContext'
-import { Filter, Grid, List, Search, RefreshCw, ChevronDown, Check, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { Filter, Grid, List, Search, RefreshCw, ChevronDown, Check, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Star, Heart, Share2, Eye } from 'lucide-react'
 
-// Trang danh sách sản phẩm công khai: lọc, tìm kiếm, sắp xếp, phân trang client
-// Ghi chú: ẩn sản phẩm hidden, seed tham số từ URL, scroll-top khi đổi trang
+// Trang danh sách sản phẩm công khai: lọc nâng cao, tìm kiếm, sắp xếp, phân trang client
+// Ghi chú: ẩn sản phẩm hidden, seed tham số từ URL, scroll-top khi đổi trang, wishlist
 const Products = () => {
   const { products, loading, categories, loadProducts } = useProducts()
   const location = useLocation()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedBrand, setSelectedBrand] = useState('all')
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' })
   const [viewMode, setViewMode] = useState('grid')
   const [showFilters, setShowFilters] = useState(true)
   const [sortBy, setSortBy] = useState('featured')
@@ -20,35 +22,88 @@ const Products = () => {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(12)
   const [pageSizeOpen, setPageSizeOpen] = useState(false)
+  const [wishlist, setWishlist] = useState(new Set())
   const pageSizeRef = useRef(null)
 
   const sortOptions = [
     { key: 'featured', label: 'Nổi bật' },
     { key: 'views', label: 'Xem nhiều' },
-    { key: 'date', label: 'Mới nhất' }
+    { key: 'viewsToday', label: 'Xem nhiều hôm nay' },
+    { key: 'date', label: 'Mới nhất' },
+    { key: 'name', label: 'Tên A-Z' }
   ]
 
-  // Lọc theo ô tìm kiếm, danh mục và trạng thái ẩn/hiện
+  // Get unique brands from products
+  const brands = useMemo(() => {
+    const brandSet = new Set()
+    products.forEach(p => {
+      if (p.brand && p.brand.trim()) {
+        brandSet.add(p.brand.trim())
+      }
+    })
+    return Array.from(brandSet).sort()
+  }, [products])
+
+  // Load wishlist from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('dalatfarm:wishlist')
+    if (saved) {
+      try {
+        setWishlist(new Set(JSON.parse(saved)))
+      } catch (_) {
+        setWishlist(new Set())
+      }
+    }
+  }, [])
+
+  // Save wishlist to localStorage
+  const toggleWishlist = (productId) => {
+    setWishlist(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(productId)) {
+        newSet.delete(productId)
+      } else {
+        newSet.add(productId)
+      }
+      localStorage.setItem('dalatfarm:wishlist', JSON.stringify([...newSet]))
+      return newSet
+    })
+  }
+
+  // Lọc theo ô tìm kiếm, danh mục, thương hiệu, giá và trạng thái ẩn/hiện
   const filteredProducts = products.filter(product => {
     const s = searchTerm.toLowerCase()
     const matchesSearch = product.name.toLowerCase().includes(s) ||
                          (product.description || '').toLowerCase().includes(s) ||
                          (product.brand || '').toLowerCase().includes(s)
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
+    const matchesBrand = selectedBrand === 'all' || product.brand === selectedBrand
     const notHidden = !product.hidden
-    return notHidden && matchesSearch && matchesCategory
+    
+    // Price filtering (if price is available)
+    let matchesPrice = true
+    if (product.price) {
+      const price = Number(product.price)
+      if (priceRange.min && price < Number(priceRange.min)) matchesPrice = false
+      if (priceRange.max && price > Number(priceRange.max)) matchesPrice = false
+    }
+    
+    return notHidden && matchesSearch && matchesCategory && matchesBrand && matchesPrice
   })
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
       case 'name':
         return a.name.localeCompare(b.name)
-      case 'category':
-        return a.category.localeCompare(b.category)
       case 'featured':
         return (b.featured ? 1 : 0) - (a.featured ? 1 : 0)
       case 'views':
         return (b.views || 0) - (a.views || 0)
+      case 'viewsToday':
+        const day = new Date().toISOString().slice(0, 10)
+        const aViewsToday = Number((a.viewsByDay && a.viewsByDay[day]) || 0)
+        const bViewsToday = Number((b.viewsByDay && b.viewsByDay[day]) || 0)
+        return bViewsToday - aViewsToday
       case 'date':
         return new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
       default:
@@ -69,6 +124,8 @@ const Products = () => {
   const clearFilters = () => {
     setSearchTerm('')
     setSelectedCategory('all')
+    setSelectedBrand('all')
+    setPriceRange({ min: '', max: '' })
     setSortBy('featured')
   }
 
@@ -86,7 +143,7 @@ const Products = () => {
   // Reset về trang 1 mỗi khi thay đổi bộ lọc/tìm kiếm/sắp xếp/chế độ hiển thị
   useEffect(() => {
     setPage(1)
-  }, [searchTerm, selectedCategory, sortBy, viewMode])
+  }, [searchTerm, selectedCategory, selectedBrand, priceRange, sortBy, viewMode])
 
   // Khi chuyển trang, cuộn lên đầu trang (mượt)
   useEffect(() => {

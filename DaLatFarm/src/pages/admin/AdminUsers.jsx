@@ -16,6 +16,9 @@ import {
 const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedRole, setSelectedRole] = useState('all')
+  const [showUserModal, setShowUserModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [showAddUserModal, setShowAddUserModal] = useState(false)
 
   const users = [
     {
@@ -25,7 +28,9 @@ const AdminUsers = () => {
       role: 'admin',
       status: 'active',
       createdAt: '2025-08-23',
-      lastLogin: '2025-09-3'
+      lastLogin: '2025-09-3',
+      phone: '0263.123.4567',
+      messageCount: 0
     },
   ]
 
@@ -64,6 +69,28 @@ const AdminUsers = () => {
     }
   }
 
+  // User action handlers
+  const handleViewUser = (user) => {
+    setSelectedUser(user)
+    setShowUserModal(true)
+  }
+
+  const handleEditUser = (user) => {
+    setSelectedUser(user)
+    setShowAddUserModal(true)
+  }
+
+  const handleDeleteUser = (user) => {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa người dùng ${user.name}?`)) {
+      alert(`Đã xóa người dùng ${user.name}`)
+    }
+  }
+
+  const handleAddUser = () => {
+    setSelectedUser(null)
+    setShowAddUserModal(true)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -74,7 +101,10 @@ const AdminUsers = () => {
               <h1 className="text-3xl font-bold text-gray-900">Quản lý người dùng</h1>
               <p className="text-gray-600 mt-2">Quản lý tài khoản người dùng của DaLat Farm</p>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+            <button 
+              onClick={handleAddUser}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
               <Plus className="w-4 h-4" />
               <span>Thêm người dùng</span>
             </button>
@@ -184,16 +214,31 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
+                        <button 
+                          onClick={() => handleViewUser(user)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                          title="Xem chi tiết"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="text-green-600 hover:text-green-900 p-1 rounded">
+                        <button 
+                          onClick={() => handleEditUser(user)}
+                          className="text-green-600 hover:text-green-900 p-1 rounded"
+                          title="Chỉnh sửa"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-900 p-1 rounded">
+                        <button 
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded"
+                          title="Xóa"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
+                        <button 
+                          className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                          title="Thêm tùy chọn"
+                        >
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
                       </div>
@@ -222,6 +267,180 @@ const AdminUsers = () => {
             </button>
           </div>
         </div>
+
+        {/* User Detail Modal */}
+        {showUserModal && selectedUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Chi tiết người dùng</h3>
+                <button 
+                  onClick={() => setShowUserModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+                    <User className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">{selectedUser.name}</h4>
+                    <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Vai trò</label>
+                    <p className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(selectedUser.role)}`}>
+                      {selectedUser.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Trạng thái</label>
+                    <p className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedUser.status)}`}>
+                      {selectedUser.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Số điện thoại</label>
+                  <p className="text-gray-900">{selectedUser.phone || 'Chưa cập nhật'}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Số tin nhắn</label>
+                  <p className="text-gray-900">{selectedUser.messageCount || 0}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Ngày tạo</label>
+                    <p className="text-gray-900">{selectedUser.createdAt}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Đăng nhập cuối</label>
+                    <p className="text-gray-900">{selectedUser.lastLogin}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button 
+                  onClick={() => setShowUserModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Đóng
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowUserModal(false)
+                    handleEditUser(selectedUser)
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Chỉnh sửa
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Edit User Modal */}
+        {showAddUserModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {selectedUser ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}
+                </h3>
+                <button 
+                  onClick={() => setShowAddUserModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tên</label>
+                  <input 
+                    type="text" 
+                    defaultValue={selectedUser?.name || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập tên người dùng"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input 
+                    type="email" 
+                    defaultValue={selectedUser?.email || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                  <input 
+                    type="tel" 
+                    defaultValue={selectedUser?.phone || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Nhập số điện thoại"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                  <select 
+                    defaultValue={selectedUser?.role || 'user'}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="user">Người dùng</option>
+                    <option value="admin">Quản trị viên</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+                  <select 
+                    defaultValue={selectedUser?.status || 'active'}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="active">Hoạt động</option>
+                    <option value="inactive">Không hoạt động</option>
+                  </select>
+                </div>
+              </form>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button 
+                  onClick={() => setShowAddUserModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={() => {
+                    alert(selectedUser ? 'Đã cập nhật người dùng!' : 'Đã thêm người dùng mới!')
+                    setShowAddUserModal(false)
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {selectedUser ? 'Cập nhật' : 'Thêm mới'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
