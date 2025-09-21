@@ -94,28 +94,31 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   }
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-60'} transition-all duration-300 ease-in-out hidden lg:block sticky top-16 self-start`}>
-      <div className="flex flex-col h-[calc(100vh-4rem)] bg-gradient-to-b from-gray-900 via-[#12151b] to-gray-900">
+    <div className={`${isCollapsed ? 'col-1' : 'col-1'} d-none d-lg-block position-sticky`} style={{top: '72px', height: 'calc(100vh - 72px)', width: isCollapsed ? '64px' : '200px'}}>
+      <div className="d-flex flex-column h-100 bg-white shadow-sm">
         {/* Logo */}
-        <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900/95 border-b border-white/5">
-          <Link to="/admin" className="flex items-center space-x-3 w-full">
-            <img
-              src="/images/logoAdmin.png"
-              alt="DaLat Farm Admin"
-              className="w-10 h-10 rounded-xl object-cover flex-shrink-0 ring-2 ring-blue-300 shadow"
-            />
+        <div className="d-flex align-items-center px-2 py-1.5 border-bottom">
+          <Link to="/admin" className="d-flex align-items-center text-decoration-none w-100">
+            <div className="bg-primary rounded-circle p-1 me-2 shadow-sm">
+              <img
+                src="/images/logoAdmin.png"
+                alt="DaLat Farm Admin"
+                className="rounded-circle"
+                style={{width: '24px', height: '24px', objectFit: 'cover'}}
+              />
+            </div>
             {!isCollapsed && (
-              <div className="min-w-0 flex-1">
-                <h1 className="text-lg font-bold text-white truncate">DaLat Farm</h1>
-                <p className="text-xs text-gray-300 truncate">Admin Panel</p>
+              <div className="flex-grow-1">
+                <h6 className="mb-0 fw-bold text-dark text-truncate" style={{fontSize: '0.85rem'}}>DaLat Farm</h6>
+                <small className="text-muted" style={{fontSize: '0.7rem'}}>Admin Dashboard</small>
               </div>
             )}
           </Link>
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 flex flex-col overflow-y-auto">
-          <nav className="flex-1 px-2.5 py-3 space-y-1">
+        <div className="flex-grow-1 overflow-auto">
+          <nav className="px-1 py-2">
             {navigation.map((item) => {
               const Icon = item.icon
               const isActiveItem = isActive(item.href)
@@ -124,42 +127,32 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center px-2.5 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
+                  className={`d-flex align-items-center px-2 py-3 mb-2 text-decoration-none mazer-sidebar-item ${
                     isActiveItem
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md scale-[1.02]'
-                      : 'text-gray-300 hover:bg-gray-800/80 hover:text-white hover:scale-[1.02]'
+                      ? 'active'
+                      : 'text-dark'
                   }`}
                   title={isCollapsed ? item.description : ''}
                 >
-                  <div className="relative">
-                    <Icon
-                      className={`flex-shrink-0 h-5 w-5 ${
-                        isActiveItem
-                          ? 'text-white'
-                          : 'text-gray-400 group-hover:text-gray-300'
-                      }`}
-                    />
+                  <div className="position-relative">
+                    <Icon size={18} className="flex-shrink-0" />
                     {/* Real-time indicator */}
                     {item.badge !== null && item.badge > 0 && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse">
-                        <Circle className="w-3 h-3 text-red-500" fill="currentColor" />
-                      </div>
+                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.55rem'}}>
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
                     )}
                   </div>
                   
                   {!isCollapsed && (
                     <>
-                      <span className="ml-3 flex-1">{item.name}</span>
+                      <span className="ms-1.5 flex-grow-1 fw-medium" style={{fontSize: '0.85rem'}}>{item.name}</span>
                       {item.badge !== null && item.badge > 0 && (
-                        <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[28px] text-center shadow">
+                        <span className="badge bg-danger ms-auto" style={{fontSize: '0.65rem'}}>
                           {item.badge > 99 ? '99+' : item.badge}
                         </span>
                       )}
-                      <ChevronRight 
-                        className={`ml-2 h-4 w-4 transition-transform duration-200 ${
-                          isActiveItem ? 'rotate-90' : 'rotate-0'
-                        }`}
-                      />
+                      <ChevronRight size={12} className="ms-1" />
                     </>
                   )}
                 </Link>
@@ -168,16 +161,15 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
           </nav>
         </div>
 
-        {/* Embedded Real-time widget when expanded */}
-        {/* Link to Real-time page instead of embedding widget to avoid layout issues at high zoom */}
+        {/* Real-time widget */}
         {!isCollapsed && (
-          <div className="px-3 pb-2">
-            <Link to="/admin/realtime" className="block rounded-xl bg-gray-800/70 border border-white/5 p-3 hover:bg-gray-800/90 transition-colors">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-gray-200">Trạng thái Real-time</div>
-                <Radio className="w-4 h-4 text-blue-400" />
+          <div className="px-1 py-0.5">
+            <Link to="/admin/realtime" className="d-block p-1.5 mazer-card text-decoration-none">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="small fw-medium text-dark" style={{fontSize: '0.75rem'}}>Trạng thái Real-time</div>
+                <Radio size={12} className="text-primary" />
               </div>
-              <div className="text-xs text-gray-400 mt-1">Nhấn để xem chi tiết</div>
+              <div className="small text-muted" style={{fontSize: '0.65rem'}}>Nhấn để xem chi tiết</div>
             </Link>
           </div>
         )}
@@ -188,13 +180,10 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
         {/* Collapse/Expand Button */}
         <button
           onClick={() => onToggleCollapse && onToggleCollapse(!isCollapsed)}
-          className="absolute -right-3 top-20 bg-gray-800 text-gray-300 p-1 rounded-full shadow-lg hover:bg-gray-700 transition-colors"
+          className="position-absolute bg-white text-dark p-2 rounded-circle border-0 shadow-sm"
+          style={{right: '-12px', top: '80px'}}
         >
-          <ChevronRight 
-            className={`w-4 h-4 transition-transform duration-300 ${
-              isCollapsed ? 'rotate-180' : 'rotate-0'
-            }`}
-          />
+          <ChevronRight size={16} />
         </button>
       </div>
     </div>
@@ -224,23 +213,24 @@ const SidebarUser = ({ isCollapsed }) => {
   }, [])
 
   return (
-    <div className="flex-shrink-0 flex bg-gray-800/95 p-4 border-t border-white/5">
-      <div className="flex items-center w-full">
-        <div className="relative">
+    <div className="flex-shrink-0 px-1 py-1 border-top">
+      <div className="d-flex align-items-center w-100">
+        <div className="position-relative">
           <img
             src={avatar || '/images/logoAdmin.png'}
             alt="Admin User"
-            className="inline-block h-10 w-10 rounded-full ring-2 ring-blue-300 shadow object-cover"
+            className="rounded-circle border-2 border-white shadow-sm"
+            style={{width: '32px', height: '32px', objectFit: 'cover'}}
           />
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-700"></div>
+          <div className="position-absolute bottom-0 end-0 w-2 h-2 bg-success rounded-circle border border-white"></div>
         </div>
         {!isCollapsed && (
-          <div className="ml-3 min-w-0 flex-1">
-            <p className="text-sm font-medium text-white truncate">{name}</p>
-            <p className="text-xs text-gray-300 truncate">{email}</p>
-            <div className="flex items-center mt-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-              <span className="text-xs text-green-400">Online</span>
+          <div className="ms-1.5 flex-grow-1">
+            <div className="small fw-medium text-dark text-truncate" style={{fontSize: '0.75rem'}}>{name}</div>
+            <div className="small text-muted text-truncate" style={{fontSize: '0.65rem'}}>{email}</div>
+            <div className="d-flex align-items-center">
+              <div className="w-1 h-1 bg-success rounded-circle me-1"></div>
+              <span className="small text-success" style={{fontSize: '0.65rem'}}>Online</span>
             </div>
           </div>
         )}

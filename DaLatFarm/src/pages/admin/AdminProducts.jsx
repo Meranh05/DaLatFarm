@@ -266,45 +266,45 @@ const AdminProducts = () => {
 
       {/* Stats Cards */}
       {/* KPI Cards - centered and consistent style */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
-          <div className="p-2 bg-blue-100 rounded-lg mb-2">
-            <Eye className="w-6 h-6 text-blue-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex flex-col items-center justify-center text-center">
+          <div className="p-1.5 bg-blue-100 rounded-lg mb-1.5">
+            <Eye className="w-5 h-5 text-blue-600" />
           </div>
-          <p className="text-sm font-medium text-gray-600">Tổng sản phẩm</p>
-          <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+          <p className="text-xs font-medium text-gray-600">Tổng sản phẩm</p>
+          <p className="text-xl font-bold text-gray-900">{products.length}</p>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
-          <div className="p-2 bg-green-100 rounded-lg mb-2">
-            <Filter className="w-6 h-6 text-green-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex flex-col items-center justify-center text-center">
+          <div className="p-1.5 bg-green-100 rounded-lg mb-1.5">
+            <Filter className="w-5 h-5 text-green-600" />
           </div>
-          <p className="text-sm font-medium text-gray-600">Danh mục</p>
-          <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
+          <p className="text-xs font-medium text-gray-600">Danh mục</p>
+          <p className="text-xl font-bold text-gray-900">{categories.length}</p>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
-          <div className="p-2 bg-orange-100 rounded-lg mb-2">
-            <Eye className="w-6 h-6 text-orange-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex flex-col items-center justify-center text-center">
+          <div className="p-1.5 bg-orange-100 rounded-lg mb-1.5">
+            <Eye className="w-5 h-5 text-orange-600" />
           </div>
-          <p className="text-sm font-medium text-gray-600">Nổi bật</p>
-          <p className="text-2xl font-bold text-gray-900">{products.filter(p => p.featured).length}</p>
+          <p className="text-xs font-medium text-gray-600">Nổi bật</p>
+          <p className="text-xl font-bold text-gray-900">{products.filter(p => p.featured).length}</p>
         </div>
         
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col items-center justify-center text-center">
-          <div className="p-2 bg-purple-100 rounded-lg mb-2">
-            <RefreshCw className="w-6 h-6 text-purple-600" />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex flex-col items-center justify-center text-center">
+          <div className="p-1.5 bg-purple-100 rounded-lg mb-1.5">
+            <RefreshCw className="w-5 h-5 text-purple-600" />
           </div>
-          <p className="text-sm font-medium text-gray-600">Cập nhật</p>
+          <p className="text-xs font-medium text-gray-600">Cập nhật</p>
           <p className="text-sm font-bold text-gray-900">{lastUpdate.toLocaleTimeString('vi-VN')}</p>
         </div>
       </div>
 
       {/* Filters and Controls */}
-      <div className="bg-white rounded-lg shadow-sm p-5">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+      <div className="bg-white rounded-lg shadow-sm p-3">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-3 lg:space-y-0">
           {/* Left side - Search and Filters */}
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />

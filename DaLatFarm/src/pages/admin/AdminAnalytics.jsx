@@ -303,80 +303,406 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="row g-4 mb-5">
           {Object.entries(analyticsData.trends || {}).map(([key, data]) => {
             const icons = { products: Package, views: Eye, users: Users, events: Calendar }
             const Icon = icons[key]
             const labels = { products: 'Sản phẩm mới', views: 'Tổng lượt xem', users: 'Người dùng', events: 'Sự kiện' }
+            const colors = { products: 'primary', views: 'success', users: 'info', events: 'warning' }
+            const color = colors[key] || 'primary'
             return (
-              <div key={key} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-shadow">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{labels[key]}</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">{formatNumber(data.current)}</p>
+              <div key={key} className="col-12 col-md-6 col-lg-3">
+                <div className="card h-100 border-0 shadow-sm">
+                  <div className="card-body">
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <div>
+                        <h6 className="card-title text-muted mb-1">{labels[key]}</h6>
+                        <h3 className={`fw-bold text-${color} mb-0`}>{formatNumber(data.current)}</h3>
+                      </div>
+                      <div className={`p-3 bg-${color} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center`} style={{width: '50px', height: '50px'}}>
+                        <Icon className={`w-5 h-5 text-${color}`} />
+                      </div>
+                    </div>
+                    {key !== 'users' && key !== 'events' && (
+                      <div className="d-flex align-items-center">
+                        {getTrendIcon(data.trend)}
+                        <span className={`text-sm fw-medium ms-2 ${getTrendColor(data.trend)}`}>{data.change}</span>
+                        <span className="text-sm text-muted ms-2">so với kỳ trước</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"><Icon className="w-6 h-6 text-blue-600" /></div>
                 </div>
-                {key !== 'users' && key !== 'events' && (
-                  <div className="flex items-center">{getTrendIcon(data.trend)}<span className={`text-sm font-medium ml-2 ${getTrendColor(data.trend)}`}>{data.change}</span><span className="text-sm text-gray-500 ml-2">so với kỳ trước</span></div>
-                )}
               </div>
             )
           })}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6"><h3 className="text-lg font-semibold text-gray-900">Phân bố danh mục</h3><PieChart className="w-5 h-5 text-blue-500" /></div>
-            <div className="space-y-4">
-              {analyticsData.categoryStats?.map((category, index) => (
-                <div key={category.name} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3"><div className="w-4 h-4 rounded-full" style={{ backgroundColor: `hsl(${index * 60}, 70%, 60%)` }}></div><span className="text-sm font-medium text-gray-900">{category.name}</span></div>
-                  <div className="text-right"><p className="text-sm font-medium text-gray-900">{category.products} sản phẩm</p><p className="text-xs text-gray-500">{category.percentage}% lượt xem</p></div>
+        <div className="row g-4 mb-5">
+          <div className="col-12 col-lg-6">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-transparent border-0 pb-0">
+                <div className="d-flex align-items-center justify-content-between">
+                  <h5 className="card-title mb-0">Phân bố danh mục</h5>
+                  <PieChart className="w-5 h-5 text-primary" />
                 </div>
-              ))}
+              </div>
+              <div className="card-body">
+                {/* Pie Chart Visualization */}
+                <div className="row align-items-center">
+                  <div className="col-5">
+                    <div className="position-relative d-flex justify-content-center" style={{width: '100%', height: '250px'}}>
+                      <div className="position-relative" style={{width: '200px', height: '200px'}}>
+                        <svg width="200" height="200" className="position-absolute top-0 start-0">
+                          <circle
+                            cx="100"
+                            cy="100"
+                            r="80"
+                            fill="none"
+                            stroke="#e9ecef"
+                            strokeWidth="25"
+                          />
+                          {analyticsData.categoryStats?.map((category, index) => {
+                            const total = analyticsData.categoryStats.reduce((sum, cat) => sum + (cat.percentage || 0), 0)
+                            const percentage = (category.percentage || 0) / total
+                            const circumference = 2 * Math.PI * 80
+                            const strokeDasharray = circumference
+                            const strokeDashoffset = circumference * (1 - percentage)
+                            const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997']
+                            const color = colors[index % colors.length]
+                            
+                            return (
+                              <circle
+                                key={category.name}
+                                cx="100"
+                                cy="100"
+                                r="80"
+                                fill="none"
+                                stroke={color}
+                                strokeWidth="25"
+                                strokeDasharray={strokeDasharray}
+                                strokeDashoffset={strokeDashoffset}
+                                transform={`rotate(${index * 360 / analyticsData.categoryStats.length} 100 100)`}
+                                className="transition-all"
+                                style={{transition: 'all 0.3s ease'}}
+                              />
+                            )
+                          })}
+                        </svg>
+                        <div className="position-absolute top-50 start-50 translate-middle text-center">
+                          <div className="fw-bold text-primary" style={{fontSize: '2rem'}}>
+                            {analyticsData.categoryStats?.length || 0}
+                          </div>
+                          <small className="text-muted">Danh mục</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-7">
+                    <div className="row g-3">
+                      {analyticsData.categoryStats?.map((category, index) => {
+                        const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997']
+                        const color = colors[index % colors.length]
+                        return (
+                          <div key={category.name} className="col-12">
+                            <div className="d-flex align-items-center p-2 bg-light rounded">
+                              <div 
+                                className="w-4 h-4 rounded-circle me-3" 
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <div className="flex-grow-1">
+                                <div className="fw-medium text-dark">{category.name}</div>
+                                <div className="text-muted small">
+                                  {category.products} sản phẩm • {category.percentage}%
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6"><h3 className="text-lg font-semibold text-gray-900">Sản phẩm nổi bật</h3><BarChart3 className="w-5 h-5 text-green-500" /></div>
-            <div className="space-y-4">
-              {analyticsData.topProducts?.map((p, index) => (
-                <div key={p.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center space-x-3"><div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center"><span className="text-sm font-bold text-blue-600">{index + 1}</span></div><div><p className="text-sm font-medium text-gray-900">{p.name}</p><p className="text-xs text-gray-500">{p.category}</p></div></div>
-                  <div className="text-right"><p className="text-sm font-medium text-gray-900">{formatNumber(p.views)} lượt xem</p></div>
+          <div className="col-12 col-lg-6">
+            <div className="card border-0 shadow-sm h-100">
+              <div className="card-header bg-transparent border-0 pb-0">
+                <div className="d-flex align-items-center justify-content-between">
+                  <h5 className="card-title mb-0">Sản phẩm nổi bật</h5>
+                  <BarChart3 className="w-5 h-5 text-success" />
                 </div>
-              ))}
+              </div>
+              <div className="card-body">
+                {/* Horizontal Bar Chart */}
+                <div className="row g-3">
+                  {analyticsData.topProducts?.map((p, index) => {
+                    const maxViews = Math.max(...analyticsData.topProducts.map(x => x.views)) || 1
+                    const percentage = (p.views / maxViews) * 100
+                    const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1']
+                    const color = colors[index % colors.length]
+                    
+                    return (
+                      <div key={p.name} className="col-12">
+                        <div className="mb-2">
+                          <div className="d-flex align-items-center justify-content-between mb-1">
+                            <div className="d-flex align-items-center">
+                              <div className="w-6 h-6 bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center me-2">
+                                <span className="fw-bold text-primary" style={{fontSize: '0.75rem'}}>{index + 1}</span>
+                              </div>
+                              <div>
+                                <p className="mb-0 fw-medium text-dark small">{p.name}</p>
+                                <small className="text-muted" style={{fontSize: '0.7rem'}}>{p.category}</small>
+                              </div>
+                            </div>
+                            <span className="fw-bold text-dark small">{formatNumber(p.views)}</span>
+                          </div>
+                          <div className="progress" style={{height: '8px'}}>
+                            <div 
+                              className="progress-bar" 
+                              role="progressbar" 
+                              style={{ 
+                                width: `${percentage}%`,
+                                backgroundColor: color,
+                                transition: 'width 0.6s ease'
+                              }}
+                              aria-valuenow={percentage} 
+                              aria-valuemin="0" 
+                              aria-valuemax="100"
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6"><h3 className="text-lg font-semibold text-gray-900">Lượt xem theo tháng</h3><TrendingUp className="w-5 h-5 text-purple-500" /></div>
-          <div className="h-64 flex items-end justify-between space-x-2">
-            {analyticsData.monthlyViews?.map((m, idx) => {
-              const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
-              const height = (m.views / maxViews) * 100
-              return (
-                <div key={m.month} className="flex-1 flex flex-col items-center">
-                  <div className="w-full bg-gray-200 rounded-t-lg relative group"><div className="bg-gradient-to-t from-blue-500 to-blue-600 rounded-t-lg transition-all duration-300 group-hover:from-blue-600 group-hover:to-blue-700" style={{ height: `${height}%` }}></div><div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">{formatNumber(m.views)}</div></div>
-                  <span className="text-xs text-gray-500 mt-2">{m.month}</span>
+        {/* Line Chart for Trends */}
+        <div className="card border-0 shadow-sm mb-5">
+          <div className="card-header bg-transparent border-0">
+            <div className="d-flex align-items-center justify-content-between">
+              <h5 className="card-title mb-0">Xu hướng theo thời gian</h5>
+              <Activity className="w-5 h-5 text-warning" />
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="row">
+              <div className="col-12">
+                <div className="position-relative" style={{height: '300px'}}>
+                  <svg width="100%" height="300" className="border rounded">
+                    {/* Grid lines */}
+                    <defs>
+                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f8f9fa" strokeWidth="1"/>
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    
+                    {/* Y-axis labels */}
+                    {[0, 25, 50, 75, 100].map((value, index) => (
+                      <g key={value}>
+                        <line 
+                          x1="50" 
+                          y1={50 + index * 50} 
+                          x2="100%" 
+                          y2={50 + index * 50} 
+                          stroke="#e9ecef" 
+                          strokeWidth="1"
+                        />
+                        <text 
+                          x="40" 
+                          y={55 + index * 50} 
+                          textAnchor="end" 
+                          className="text-muted small"
+                          fill="#6c757d"
+                        >
+                          {value}%
+                        </text>
+                      </g>
+                    ))}
+                    
+                    {/* Real trend lines */}
+                    {analyticsData.monthlyViews?.length > 0 && (
+                      <>
+                        {/* Views trend */}
+                        <polyline
+                          fill="none"
+                          stroke="#0d6efd"
+                          strokeWidth="3"
+                          points={analyticsData.monthlyViews.map((m, index) => {
+                            const chartWidth = 800 // Fixed width for consistent calculation
+                            const x = 80 + (index * (chartWidth - 160) / Math.max(analyticsData.monthlyViews.length - 1, 1))
+                            const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
+                            const y = 250 - ((m.views / maxViews) * 200)
+                            return `${x},${y}`
+                          }).join(' ')}
+                        />
+                        
+                        {/* Data points */}
+                        {analyticsData.monthlyViews.map((m, index) => {
+                          const chartWidth = 800
+                          const x = 80 + (index * (chartWidth - 160) / Math.max(analyticsData.monthlyViews.length - 1, 1))
+                          const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
+                          const y = 250 - ((m.views / maxViews) * 200)
+                          return (
+                            <g key={index}>
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r="5"
+                                fill="#0d6efd"
+                                stroke="white"
+                                strokeWidth="2"
+                              />
+                              <text
+                                x={x}
+                                y={y - 15}
+                                textAnchor="middle"
+                                className="small fw-bold"
+                                fill="#0d6efd"
+                                style={{fontSize: '10px'}}
+                              >
+                                {formatNumber(m.views)}
+                              </text>
+                            </g>
+                          )
+                        })}
+                        
+                        {/* X-axis labels */}
+                        {analyticsData.monthlyViews.map((m, index) => {
+                          const chartWidth = 800
+                          const x = 80 + (index * (chartWidth - 160) / Math.max(analyticsData.monthlyViews.length - 1, 1))
+                          return (
+                            <text
+                              key={index}
+                              x={x}
+                              y="290"
+                              textAnchor="middle"
+                              className="small text-muted"
+                              fill="#6c757d"
+                              style={{fontSize: '11px'}}
+                            >
+                              {m.month}
+                            </text>
+                          )
+                        })}
+                      </>
+                    )}
+                  </svg>
+                  
+                  {/* Legend */}
+                  <div className="position-absolute top-0 end-0 p-3">
+                    <div className="d-flex align-items-center">
+                      <div className="w-3 h-3 bg-primary rounded-circle me-2"></div>
+                      <span className="small text-muted">Lượt xem</span>
+                    </div>
+                  </div>
                 </div>
-              )
-            })}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div><h3 className="text-lg font-semibold text-gray-900">Xuất báo cáo</h3><p className="text-sm text-gray-500">Tải xuống báo cáo chi tiết dưới dạng PDF hoặc Excel</p></div>
-            <div className="flex items-center space-x-3">
-              <button onClick={exportCsv} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                <Download className="w-4 h-4" /><span>CSV</span>
-              </button>
-              <button onClick={exportXlsx} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2">
-                <Download className="w-4 h-4" /><span>XLSX</span>
-              </button>
+        <div className="card border-0 shadow-sm mb-5">
+          <div className="card-header bg-transparent border-0">
+            <div className="d-flex align-items-center justify-content-between">
+              <h5 className="card-title mb-0">Lượt xem theo tháng</h5>
+              <TrendingUp className="w-5 h-5 text-info" />
+            </div>
+          </div>
+          <div className="card-body">
+            <div className="row g-2 align-items-end" style={{height: '280px'}}>
+              {analyticsData.monthlyViews?.map((m, idx) => {
+                const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
+                const height = (m.views / maxViews) * 100
+                const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997', '#ffc107']
+                const color = colors[idx % colors.length]
+                
+                return (
+                  <div key={m.month} className="col">
+                    <div className="d-flex flex-column align-items-center h-100 position-relative">
+                      {/* Value display */}
+                      <div className="position-absolute top-0 start-50 translate-middle-x mb-2">
+                        <div className="bg-dark text-white px-2 py-1 rounded small fw-bold">
+                          {formatNumber(m.views)}
+                        </div>
+                      </div>
+                      
+                      {/* Bar chart */}
+                      <div className="w-100 bg-light rounded-top position-relative mt-4" style={{height: '200px'}}>
+                        <div 
+                          className="rounded-top position-absolute bottom-0 w-100 transition-all" 
+                          style={{ 
+                            height: `${height}%`,
+                            background: `linear-gradient(to top, ${color}, ${color}dd)`,
+                            boxShadow: `0 2px 4px ${color}40`
+                          }}
+                          data-bs-toggle="tooltip" 
+                          title={`${formatNumber(m.views)} lượt xem - ${m.month}`}
+                        ></div>
+                      </div>
+                      
+                      {/* Month label */}
+                      <small className="text-muted mt-2 fw-medium">{m.month}</small>
+                      
+                      {/* Percentage */}
+                      <small className="text-muted" style={{fontSize: '0.7rem'}}>
+                        {((m.views / maxViews) * 100).toFixed(1)}%
+                      </small>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            
+            {/* Summary */}
+            <div className="row mt-4">
+              <div className="col-12">
+                <div className="bg-light rounded p-3">
+                  <div className="row text-center">
+                    <div className="col-4">
+                      <div className="fw-bold text-primary">{formatNumber(Math.max(...analyticsData.monthlyViews?.map(x => x.views) || [0]))}</div>
+                      <small className="text-muted">Cao nhất</small>
+                    </div>
+                    <div className="col-4">
+                      <div className="fw-bold text-success">{formatNumber(Math.round(analyticsData.monthlyViews?.reduce((sum, x) => sum + x.views, 0) / analyticsData.monthlyViews?.length || 0))}</div>
+                      <small className="text-muted">Trung bình</small>
+                    </div>
+                    <div className="col-4">
+                      <div className="fw-bold text-info">{formatNumber(analyticsData.monthlyViews?.reduce((sum, x) => sum + x.views, 0) || 0)}</div>
+                      <small className="text-muted">Tổng cộng</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card border-0 shadow-sm">
+          <div className="card-body">
+            <div className="row align-items-center">
+              <div className="col-12 col-md-8">
+                <h5 className="card-title mb-1">Xuất báo cáo</h5>
+                <p className="card-text text-muted mb-0">Tải xuống báo cáo chi tiết dưới dạng CSV hoặc Excel</p>
+              </div>
+              <div className="col-12 col-md-4 mt-3 mt-md-0">
+                <div className="d-flex gap-2 justify-content-md-end">
+                  <button onClick={exportCsv} className="btn btn-outline-primary d-flex align-items-center" style={{textDecoration: 'none'}}>
+                    <Download className="w-4 h-4 me-2" />
+                    CSV
+                  </button>
+                  <button onClick={exportXlsx} className="btn btn-outline-success d-flex align-items-center" style={{textDecoration: 'none'}}>
+                    <Download className="w-4 h-4 me-2" />
+                    XLSX
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

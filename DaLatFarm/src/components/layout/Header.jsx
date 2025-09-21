@@ -76,7 +76,7 @@ const Header = () => {
       <div className="container-responsive">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3" style={{textDecoration: 'none'}}>
             <img src="/images/logo.png" alt="DaLat Farm" className="w-12 h-12 rounded object-cover ring-2 ring-red-200 shadow-md" />
             <div className="flex flex-col">
               <span className="text-lg font-bold text-gray-900">DaLat</span>
@@ -95,6 +95,7 @@ const Header = () => {
                       ? 'text-red-700 bg-red-50 font-semibold'
                       : 'text-gray-700 hover:text-red-700 hover:bg-red-50'
                   }`}
+                  style={{textDecoration: 'none'}}
                 >
                   <span>{item.name}</span>
                   {item.hasDropdown && (
@@ -108,16 +109,16 @@ const Header = () => {
                     <div className="py-2">
                       {item.name === 'SẢN PHẨM' ? (
                         <>
-                          <Link to="/products?category=tra" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Trà & Thảo mộc</Link>
-                          <Link to="/products?category=trai-cay-say" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Trái cây sấy</Link>
-                          <Link to="/products?category=mut" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Mứt</Link>
-                          <Link to="/products?category=ca-phe" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Cà phê</Link>
+                          <Link to="/products?category=tra" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Trà & Thảo mộc</Link>
+                          <Link to="/products?category=trai-cay-say" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Trái cây sấy</Link>
+                          <Link to="/products?category=mut" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Mứt</Link>
+                          <Link to="/products?category=ca-phe" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Cà phê</Link>
                         </>
                       ) : item.name === 'TIN TỨC SỰ KIỆN' ? (
                         <>
-                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Tin tức</Link>
-                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Sự kiện</Link>
-                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600">Khuyến mãi</Link>
+                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Tin tức</Link>
+                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Sự kiện</Link>
+                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Khuyến mãi</Link>
                         </>
                       ) : null}
                     </div>
@@ -167,7 +168,7 @@ const Header = () => {
                     <div className="py-2">
                       <div className="px-4 pb-1 text-xs font-semibold text-red-500">Sản phẩm gợi ý</div>
                       {filtered.productResults.map(p => (
-                        <Link key={p.id} to={`/products/${p.id}`} className="flex items-center px-4 py-2 hover:bg-gray-50" onClick={() => setShowSuggest(false)}>
+                        <Link key={p.id} to={`/products/${p.id}`} className="flex items-center px-4 py-2 hover:bg-gray-50" onClick={() => setShowSuggest(false)} style={{textDecoration: 'none'}}>
                           <img src={(p.images && p.images[0]) || p.image} alt={p.name} className="w-10 h-10 rounded object-cover mr-3 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
                             <div className="text-sm text-gray-900 truncate">{p.name}</div>
@@ -185,7 +186,7 @@ const Header = () => {
                     <div className="py-2 border-t border-red-50">
                       <div className="px-4 pb-1 text-xs font-semibold text-red-500">Sự kiện</div>
                       {filtered.eventResults.map(ev => (
-                        <Link key={ev.id} to={`/events`} className="flex items-center px-4 py-2 hover:bg-gray-50" onClick={() => setShowSuggest(false)}>
+                        <Link key={ev.id} to={`/events`} className="flex items-center px-4 py-2 hover:bg-gray-50" onClick={() => setShowSuggest(false)} style={{textDecoration: 'none'}}>
                           <img src={ev.image} alt={ev.name || ev.title} className="w-8 h-8 rounded object-cover mr-3" />
                           <div className="min-w-0">
                             <div className="text-sm text-gray-900 truncate">{ev.name || ev.title}</div>
@@ -197,7 +198,7 @@ const Header = () => {
                   )}
 
                   <div className="p-2 border-t text-right bg-red-50/40 rounded-b-xl">
-                    <Link to={`/search?q=${encodeURIComponent(searchQuery)}`} onClick={() => setShowSuggest(false)} className="text-sm text-red-600 hover:text-red-700">Xem tất cả kết quả</Link>
+                    <Link to={`/search?q=${encodeURIComponent(searchQuery)}`} onClick={() => setShowSuggest(false)} className="text-sm text-red-600 hover:text-red-700" style={{textDecoration: 'none'}}>Xem tất cả kết quả</Link>
                   </div>
                 </div>
               )}
@@ -229,6 +230,7 @@ const Header = () => {
                       ? 'text-red-600'
                       : 'text-gray-600 hover:text-red-600'
                   }`}
+                  style={{textDecoration: 'none'}}
                 >
                   {item.name}
                 </Link>

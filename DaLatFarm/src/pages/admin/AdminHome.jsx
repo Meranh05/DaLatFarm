@@ -177,16 +177,16 @@ const AdminHome = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-4 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-2 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Chào mừng trở lại!</h1>
-            <p className="mt-2 text-blue-100">
+            <h1 className="text-2xl font-bold">Chào mừng trở lại!</h1>
+            <p className="mt-1 text-blue-100 text-sm">
               Đây là tổng quan về hoạt động của DaLat Farm
             </p>
-            <p className="mt-1 text-sm text-blue-200">
+            <p className="mt-1 text-xs text-blue-200">
               Cập nhật lần cuối: {new Date().toLocaleString('vi-VN')}
             </p>
           </div>
@@ -209,28 +209,28 @@ const AdminHome = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
         {stats.map((stat, index) => {
           const Icon = stat.icon
           return (
             <Link
               key={index}
               to={stat.href}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all duration-200"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 hover:shadow-md transition-all duration-200"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                  <div className="flex items-center mt-2">
+                  <p className="text-xs font-medium text-gray-600">{stat.name}</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1">{stat.value}</p>
+                  <div className="flex items-center mt-1">
                     {getTrendIcon(stat.trend)}
-                    <span className={`text-sm font-medium ml-1 ${getTrendColor(stat.trend)}`}>
+                    <span className={`text-xs font-medium ml-1 ${getTrendColor(stat.trend)}`}>
                       {stat.change}
                     </span>
                   </div>
                 </div>
-                <div className={`p-3 rounded-lg ${stat.color}`}>
-                  <Icon className="w-6 h-6 text-white" />
+                <div className={`p-2 rounded-lg ${stat.color}`}>
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
               </div>
             </Link>
@@ -239,33 +239,33 @@ const AdminHome = () => {
       </div>
 
       {/* Recent Products and Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         {/* Recent Products */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Sản phẩm gần đây</h2>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-gray-900">Sản phẩm gần đây</h2>
             <Link
               to="/admin/products"
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
             >
               Xem tất cả
             </Link>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-2">
             {recentProducts.map((product) => (
-              <div key={product.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div key={product.id} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-12 h-12 rounded-lg object-cover"
+                  className="w-10 h-10 rounded-lg object-cover"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                  <p className="text-xs font-medium text-gray-900 truncate">{product.name}</p>
                   <p className="text-xs text-gray-500">{product.category}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{product.views} lượt xem</p>
-                  <div className="flex items-center mt-1">
+                  <p className="text-xs font-medium text-gray-900">{product.views} lượt xem</p>
+                  <div className="flex items-center">
                     {getTrendIcon(product.trend)}
                     <span className={`text-xs ml-1 ${getTrendColor(product.trend)}`}>
                       {product.percent > 0 ? `+${product.percent}%` : `${product.percent}%`}
@@ -278,21 +278,21 @@ const AdminHome = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h2>
-          <div className="space-y-3">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2">
+          <h2 className="text-base font-semibold text-gray-900 mb-3">Thao tác nhanh</h2>
+          <div className="space-y-2">
             {quickActions.map((action, index) => {
               const Icon = action.icon
               return (
                 <Link
                   key={index}
                   to={action.href}
-                  className={`${action.color} text-white p-4 rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-3`}
+                  className={`${action.color} text-white p-3 rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 flex items-center space-x-2`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                   <div>
-                    <p className="font-medium">{action.name}</p>
-                    <p className="text-sm opacity-90">{action.description}</p>
+                    <p className="font-medium text-sm">{action.name}</p>
+                    <p className="text-xs opacity-90">{action.description}</p>
                   </div>
                 </Link>
               )
@@ -302,18 +302,18 @@ const AdminHome = () => {
       </div>
 
       {/* Activity Feed */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Hoạt động gần đây</h2>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-gray-900">Hoạt động gần đây</h2>
           <button
             onClick={() => {
               loadProducts()
               updateStats()
               updateRecentProducts()
             }}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1"
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-3 h-3" />
             <span>Làm mới</span>
           </button>
         </div>

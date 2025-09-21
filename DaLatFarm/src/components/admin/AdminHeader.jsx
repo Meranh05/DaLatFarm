@@ -148,49 +148,59 @@ const AdminHeader = () => {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
+    <header className="bg-white shadow-sm border-bottom sticky-top" style={{zIndex: 1050, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'}}>
+      <div className="container-fluid">
+        <div className="row align-items-center py-2">
           {/* Left side - Logo */}
-          <div className="flex items-center">
-            <Link to="/admin" className="flex items-center space-x-3">
-              <img
-                src={profileAvatar || '/images/logoAdmin.png'}
-                alt="DaLat Farm"
-                className="w-10 h-10 rounded-lg object-cover ring-2 ring-blue-200 shadow"
-              />
-              <div className="hidden sm:block">
-                <h1 className="text-base font-bold text-gray-900 leading-tight">DaLat Farm</h1>
-                <p className="text-xs text-gray-500 leading-tight">Admin Panel</p>
+          <div className="col-auto">
+            <Link to="/admin" className="d-flex align-items-center text-decoration-none">
+              <div className="bg-white rounded-circle p-1.5 me-2 shadow-sm">
+                <img
+                  src={profileAvatar || '/images/logoAdmin.png'}
+                  alt="DaLat Farm"
+                  className="rounded-circle"
+                  style={{width: '28px', height: '28px', objectFit: 'cover'}}
+                />
+              </div>
+              <div className="d-none d-sm-block">
+                <h1 className="h6 mb-0 fw-bold text-white" style={{fontSize: '1rem'}}>DaLat Farm</h1>
+                <small className="text-white-50" style={{fontSize: '0.75rem'}}>Admin Dashboard</small>
               </div>
             </Link>
           </div>
 
           {/* Right side - Search, Notifications, User Menu */}
-          <div className="flex items-center space-x-3">
-            {/* Search */}
-            <div className="hidden md:block relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Tìm kiếm..."
-                className="pl-10 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent w-56 lg:w-64 xl:w-72 transition-all duration-200"
-              />
-            </div>
-
-            {/* Notifications */}
-            <div className="relative">
-              <button 
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors rounded-lg hover:bg-gray-100"
-              >
-                <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
+          <div className="col-auto ms-auto">
+            <div className="d-flex align-items-center gap-2">
+              {/* Search */}
+              <div className="d-none d-md-block position-relative">
+                <div className="input-group" style={{width: '280px'}}>
+                  <span className="input-group-text bg-white border-end-0" style={{padding: '0.375rem 0.5rem'}}>
+                    <Search size={14} className="text-muted" />
                   </span>
-                )}
-              </button>
+                  <input
+                    type="text"
+                    className="form-control border-start-0 bg-white shadow-sm"
+                    placeholder="Tìm kiếm..."
+                    style={{borderRadius: '0 20px 20px 0', padding: '0.375rem 0.5rem', fontSize: '0.875rem'}}
+                  />
+                </div>
+              </div>
+
+              {/* Notifications */}
+              <div className="position-relative">
+                <button 
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  className="btn btn-light btn-sm position-relative rounded-circle shadow-sm"
+                  style={{width: '36px', height: '36px'}}
+                >
+                  <Bell size={16} className="text-dark" />
+                  {unreadCount > 0 && (
+                    <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{fontSize: '0.65rem'}}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
 
               {/* Notifications Dropdown */}
               {isNotificationsOpen && (
@@ -241,84 +251,92 @@ const AdminHeader = () => {
               )}
             </div>
 
-            {/* User Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <img
-                  src={profileAvatar || '/images/logoAdmin.png'}
-                  alt="Admin User"
-                  className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-200"
-                />
-                <div className="hidden lg:block text-left max-w-[12rem]">
-                  <p className="text-sm font-medium text-gray-700 truncate">{profileName}</p>
-                  <p className="text-sm text-gray-500 truncate">{profileEmail}</p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </button>
-
-              {/* User Dropdown */}
-              {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-medium text-gray-900">{profileName}</p>
-                    <p className="text-sm text-gray-500">{profileEmail}</p>
+              {/* User Menu */}
+              <div className="position-relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="btn btn-light btn-sm d-flex align-items-center gap-1.5 shadow-sm"
+                  style={{borderRadius: '20px', padding: '0.25rem 0.5rem'}}
+                >
+                  <img
+                    src={profileAvatar || '/images/logoAdmin.png'}
+                    alt="Admin User"
+                    className="rounded-circle border-2 border-white"
+                    style={{width: '28px', height: '28px', objectFit: 'cover'}}
+                  />
+                  <div className="d-none d-lg-block text-start" style={{maxWidth: '10rem'}}>
+                    <div className="small fw-medium text-dark text-truncate" style={{fontSize: '0.8rem'}}>{profileName}</div>
+                    <div className="small text-muted text-truncate" style={{fontSize: '0.7rem'}}>{profileEmail}</div>
                   </div>
-                  <Link
-                    to="/admin/profile"
-                    className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    <User className="w-4 h-4" />
-                    <span>Hồ sơ</span>
-                  </Link>
-                  {/* Settings removed */}
-                  {/* Messages feature removed */}
-                  <hr className="my-2" />
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Đăng xuất</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                  <ChevronDown size={14} className="text-muted" />
+                </button>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4">
-            <div className="space-y-2">
-              {/* Mobile Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                {/* User Dropdown */}
+                {isUserMenuOpen && (
+                  <div className="position-absolute end-0 mt-2 bg-white rounded shadow-lg border" style={{width: '224px', zIndex: 1050}}>
+                    <div className="p-3 border-bottom">
+                      <div className="small fw-medium">{profileName}</div>
+                      <div className="small text-muted">{profileEmail}</div>
+                    </div>
+                    <div className="py-2">
+                      <Link
+                        to="/admin/profile"
+                        className="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none text-dark"
+                      >
+                        <User size={16} />
+                        <span className="small">Hồ sơ</span>
+                      </Link>
+                      <hr className="my-2" />
+                      <button
+                        onClick={handleLogout}
+                        className="d-flex align-items-center gap-2 px-3 py-2 btn btn-link text-danger p-0 w-100 text-start"
+                      >
+                        <LogOut size={16} />
+                        <span className="small">Đăng xuất</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Mobile menu button */}
+        <div className="col-auto d-lg-none">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="btn btn-outline-secondary btn-sm"
+          >
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="d-lg-none border-top py-3">
+          <div className="container-fluid">
+            {/* Mobile Search */}
+            <div className="input-group">
+              <span className="input-group-text bg-light">
+                <Search size={16} />
+              </span>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm kiếm..."
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Click outside to close dropdowns */}
       {(isUserMenuOpen || isNotificationsOpen) && (
         <div 
-          className="fixed inset-0 z-30" 
+          className="position-fixed w-100 h-100" 
+          style={{top: 0, left: 0, zIndex: 1040}}
           onClick={() => {
             setIsUserMenuOpen(false)
             setIsNotificationsOpen(false)
@@ -327,27 +345,27 @@ const AdminHeader = () => {
       )}
       {/* Notification detail modal */}
       {selectedNotification && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setSelectedNotification(null)} />
-          <div className="relative bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-md mx-4 p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center space-x-2">
+        <div className="position-fixed w-100 h-100 d-flex align-items-center justify-content-center" style={{top: 0, left: 0, zIndex: 1060}}>
+          <div className="position-absolute w-100 h-100 bg-dark bg-opacity-50" onClick={() => setSelectedNotification(null)} />
+          <div className="position-relative bg-white rounded shadow-lg border w-100 mx-3 p-4" style={{maxWidth: '400px'}}>
+            <div className="d-flex justify-content-between align-items-start mb-3">
+              <div className="d-flex align-items-center gap-2">
                 {getNotificationIcon(selectedNotification.type)}
-                <h3 className="text-lg font-semibold text-gray-900">{selectedNotification.title}</h3>
+                <h5 className="mb-0 fw-semibold">{selectedNotification.title}</h5>
               </div>
-              <button className="text-gray-400 hover:text-gray-600" onClick={() => setSelectedNotification(null)}>
-                <X className="w-5 h-5" />
+              <button className="btn btn-sm btn-outline-secondary" onClick={() => setSelectedNotification(null)}>
+                <X size={16} />
               </button>
             </div>
-            <p className="text-sm text-gray-700 whitespace-pre-line">{selectedNotification.message}</p>
-            <p className="text-xs text-gray-500 mt-3">{selectedNotification.time}</p>
-            <div className="mt-4 flex justify-end space-x-2">
+            <p className="small text-muted mb-3" style={{whiteSpace: 'pre-line'}}>{selectedNotification.message}</p>
+            <p className="small text-muted mb-3">{selectedNotification.time}</p>
+            <div className="d-flex justify-content-end gap-2">
               <button
-                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="btn btn-outline-secondary btn-sm"
                 onClick={() => setSelectedNotification(null)}
               >Đóng</button>
               <button
-                className="px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="btn btn-primary btn-sm"
                 onClick={() => { navigate(getNotificationTargetPath(selectedNotification)); setSelectedNotification(null) }}
               >Xem chi tiết</button>
             </div>

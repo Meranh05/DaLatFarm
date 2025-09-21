@@ -8,7 +8,7 @@ import { newsAPI, uploadAPI } from '../../services/apiService'
 
 const AdminNews = () => {
   return (
-    <div className="p-6 text-sm text-gray-600">Tính năng Tin tức đã được tắt.</div>
+    <div className="p-6 text-sm text-gray-600">Tính năng Tin tức đợi phát triển.</div>
   )
 }
 
