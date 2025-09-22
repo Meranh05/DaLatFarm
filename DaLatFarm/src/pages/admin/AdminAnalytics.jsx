@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -7,8 +7,7 @@ import {
   Package, 
   Calendar,
   BarChart3,
-  PieChart,
-  Activity,
+  
   Download,
   RefreshCw
 } from 'lucide-react'
@@ -24,10 +23,25 @@ const AdminAnalytics = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month')
   const [analyticsData, setAnalyticsData] = useState({})
+  // Hiển thị phần trăm cho biểu đồ theo tháng
+  const [monthlyAsPercent, setMonthlyAsPercent] = useState(false)
+  // UI state
+  const [categoryMetric, setCategoryMetric] = useState('products') // 'products' | 'views'
+  // Tooltip hover for interactive charts
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, text: '' })
+  const showTip = (e, text) => {
+    setTooltip({ show: true, x: e.clientX + 12, y: e.clientY + 12, text })
+  }
+  const moveTip = (e) => {
+    setTooltip((t) => ({ ...t, x: e.clientX + 12, y: e.clientY + 12 }))
+  }
+  const hideTip = () => setTooltip((t) => ({ ...t, show: false }))
 
   useEffect(() => {
     loadAnalytics()
   }, [timeRange, products])
+
+  // Đã loại bỏ các state/logic cho biểu đồ xu hướng sản phẩm theo tháng (không sử dụng)
 
   const getRange = (range, offset = 0) => {
     const now = new Date()
@@ -123,11 +137,13 @@ const AdminAnalytics = () => {
       const monthlyViews = [...Array(12)].map((_, i) => {
         const date = new Date()
         date.setMonth(date.getMonth() - (11 - i))
-        const start = new Date(date.getFullYear(), date.getMonth(), 1)
-        const end = new Date(date.getFullYear(), date.getMonth() + 1, 1)
+        const y = date.getFullYear()
+        const m = date.getMonth() + 1
+        const label = `T${m}`
+        const start = new Date(y, m - 1, 1)
+        const end = new Date(y, m, 1)
         const views = countVisitsInRange([start.getTime(), end.getTime()])
-        const month = `T${date.getMonth() + 1}`
-        return { month, views }
+        return { month: label, views }
       })
 
       const topProducts = [...products]
@@ -154,7 +170,8 @@ const AdminAnalytics = () => {
         categoryStats,
         monthlyViews,
         topProducts,
-        userActivity: { newUsers: 0, activeUsers: 0, returningUsers: 0, avgSessionTime: '—' }
+        userActivity: { newUsers: 0, activeUsers: 0, returningUsers: 0, avgSessionTime: '—' },
+        dailyMap
       })
     } catch (error) {
       console.error('Error loading analytics:', error)
@@ -289,7 +306,7 @@ const AdminAnalytics = () => {
               <p className="text-gray-600 mt-2">Phân tích dữ liệu thực từ hệ thống</p>
             </div>
             <div className="flex items-center space-x-3">
-              <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="themed-select sm">
                 <option value="week">Tuần này</option>
                 <option value="month">Tháng này</option>
                 <option value="quarter">Quý này</option>
@@ -302,6 +319,10 @@ const AdminAnalytics = () => {
             </div>
           </div>
         </div>
+
+      {/* ĐÃ BỎ BIỂU ĐỒ XU HƯỚNG SẢN PHẨM THEO THÁNG THEO YÊU CẦU */}
+
+        {/* Đã loại bỏ phần code ẩn không sử dụng */}
 
         <div className="row g-4 mb-5">
           {Object.entries(analyticsData.trends || {}).map(([key, data]) => {
@@ -343,84 +364,43 @@ const AdminAnalytics = () => {
               <div className="card-header bg-transparent border-0 pb-0">
                 <div className="d-flex align-items-center justify-content-between">
                   <h5 className="card-title mb-0">Phân bố danh mục</h5>
-                  <PieChart className="w-5 h-5 text-primary" />
+                  <div className="d-flex align-items-center gap-2">
+                    <select className="themed-select sm" value={categoryMetric} onChange={(e)=>setCategoryMetric(e.target.value)}>
+                      <option value="products">Sản phẩm</option>
+                      <option value="views">Lượt xem</option>
+                    </select>
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                  </div>
                 </div>
               </div>
               <div className="card-body">
-                {/* Pie Chart Visualization */}
-                <div className="row align-items-center">
-                  <div className="col-5">
-                    <div className="position-relative d-flex justify-content-center" style={{width: '100%', height: '250px'}}>
-                      <div className="position-relative" style={{width: '200px', height: '200px'}}>
-                        <svg width="200" height="200" className="position-absolute top-0 start-0">
-                          <circle
-                            cx="100"
-                            cy="100"
-                            r="80"
-                            fill="none"
-                            stroke="#e9ecef"
-                            strokeWidth="25"
-                          />
-                          {analyticsData.categoryStats?.map((category, index) => {
-                            const total = analyticsData.categoryStats.reduce((sum, cat) => sum + (cat.percentage || 0), 0)
-                            const percentage = (category.percentage || 0) / total
-                            const circumference = 2 * Math.PI * 80
-                            const strokeDasharray = circumference
-                            const strokeDashoffset = circumference * (1 - percentage)
-                            const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997']
-                            const color = colors[index % colors.length]
-                            
-                            return (
-                              <circle
-                                key={category.name}
-                                cx="100"
-                                cy="100"
-                                r="80"
-                                fill="none"
-                                stroke={color}
-                                strokeWidth="25"
-                                strokeDasharray={strokeDasharray}
-                                strokeDashoffset={strokeDashoffset}
-                                transform={`rotate(${index * 360 / analyticsData.categoryStats.length} 100 100)`}
-                                className="transition-all"
-                                style={{transition: 'all 0.3s ease'}}
-                              />
-                            )
-                          })}
-                        </svg>
-                        <div className="position-absolute top-50 start-50 translate-middle text-center">
-                          <div className="fw-bold text-primary" style={{fontSize: '2rem'}}>
-                            {analyticsData.categoryStats?.length || 0}
+                {/* Modern horizontal bars with labels and percentages */}
+                <div className="row g-3">
+                  {(analyticsData.categoryStats||[]).map((c, idx) => {
+                    const value = categoryMetric === 'views' ? (c.views || 0) : (c.products || 0)
+                    const maxVal = Math.max(...(analyticsData.categoryStats||[]).map(x => categoryMetric==='views' ? (x.views||0) : (x.products||0)), 1)
+                    const width = (value / maxVal) * 100
+                    const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997', '#ffc107']
+                    const color = colors[idx % colors.length]
+                    return (
+                      <div key={c.name} className="col-12">
+                        <div className="d-flex align-items-center justify-content-between mb-1">
+                          <div className="d-flex align-items-center">
+                            <span className="badge me-2" style={{background: color}}>&nbsp;</span>
+                            <span className="fw-medium text-dark">{c.name}</span>
                           </div>
-                          <small className="text-muted">Danh mục</small>
+                          {categoryMetric === 'views' ? (
+                            <small className="fw-bold text-dark">{c.views || 0} lượt xem</small>
+                          ) : (
+                            <small className="fw-bold text-dark">{c.products || 0} sp • {c.percentage || 0}%</small>
+                          )}
+                        </div>
+                        <div className="bg-light rounded position-relative" style={{height:'10px'}}>
+                          <div className="position-absolute top-0 start-0 h-100 rounded" style={{width: `${width}%`, background: color, transition: 'width .6s ease'}}></div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="col-7">
-                    <div className="row g-3">
-                      {analyticsData.categoryStats?.map((category, index) => {
-                        const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997']
-                        const color = colors[index % colors.length]
-                        return (
-                          <div key={category.name} className="col-12">
-                            <div className="d-flex align-items-center p-2 bg-light rounded">
-                              <div 
-                                className="w-4 h-4 rounded-circle me-3" 
-                                style={{ backgroundColor: color }}
-                              ></div>
-                              <div className="flex-grow-1">
-                                <div className="fw-medium text-dark">{category.name}</div>
-                                <div className="text-muted small">
-                                  {category.products} sản phẩm • {category.percentage}%
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -430,7 +410,7 @@ const AdminAnalytics = () => {
             <div className="card border-0 shadow-sm h-100">
               <div className="card-header bg-transparent border-0 pb-0">
                 <div className="d-flex align-items-center justify-content-between">
-                  <h5 className="card-title mb-0">Sản phẩm nổi bật</h5>
+                  <h5 className="card-title mb-0">Top sản phẩm được xem nhiều nhất</h5>
                   <BarChart3 className="w-5 h-5 text-success" />
                 </div>
               </div>
@@ -482,144 +462,28 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        {/* Line Chart for Trends */}
-        <div className="card border-0 shadow-sm mb-5">
-          <div className="card-header bg-transparent border-0">
-            <div className="d-flex align-items-center justify-content-between">
-              <h5 className="card-title mb-0">Xu hướng theo thời gian</h5>
-              <Activity className="w-5 h-5 text-warning" />
-            </div>
-          </div>
-          <div className="card-body">
-            <div className="row">
-              <div className="col-12">
-                <div className="position-relative" style={{height: '300px'}}>
-                  <svg width="100%" height="300" className="border rounded">
-                    {/* Grid lines */}
-                    <defs>
-                      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f8f9fa" strokeWidth="1"/>
-                      </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-                    
-                    {/* Y-axis labels */}
-                    {[0, 25, 50, 75, 100].map((value, index) => (
-                      <g key={value}>
-                        <line 
-                          x1="50" 
-                          y1={50 + index * 50} 
-                          x2="100%" 
-                          y2={50 + index * 50} 
-                          stroke="#e9ecef" 
-                          strokeWidth="1"
-                        />
-                        <text 
-                          x="40" 
-                          y={55 + index * 50} 
-                          textAnchor="end" 
-                          className="text-muted small"
-                          fill="#6c757d"
-                        >
-                          {value}%
-                        </text>
-                      </g>
-                    ))}
-                    
-                    {/* Real trend lines */}
-                    {analyticsData.monthlyViews?.length > 0 && (
-                      <>
-                        {/* Views trend */}
-                        <polyline
-                          fill="none"
-                          stroke="#0d6efd"
-                          strokeWidth="3"
-                          points={analyticsData.monthlyViews.map((m, index) => {
-                            const chartWidth = 800 // Fixed width for consistent calculation
-                            const x = 80 + (index * (chartWidth - 160) / Math.max(analyticsData.monthlyViews.length - 1, 1))
-                            const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
-                            const y = 250 - ((m.views / maxViews) * 200)
-                            return `${x},${y}`
-                          }).join(' ')}
-                        />
-                        
-                        {/* Data points */}
-                        {analyticsData.monthlyViews.map((m, index) => {
-                          const chartWidth = 800
-                          const x = 80 + (index * (chartWidth - 160) / Math.max(analyticsData.monthlyViews.length - 1, 1))
-                          const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
-                          const y = 250 - ((m.views / maxViews) * 200)
-                          return (
-                            <g key={index}>
-                              <circle
-                                cx={x}
-                                cy={y}
-                                r="5"
-                                fill="#0d6efd"
-                                stroke="white"
-                                strokeWidth="2"
-                              />
-                              <text
-                                x={x}
-                                y={y - 15}
-                                textAnchor="middle"
-                                className="small fw-bold"
-                                fill="#0d6efd"
-                                style={{fontSize: '10px'}}
-                              >
-                                {formatNumber(m.views)}
-                              </text>
-                            </g>
-                          )
-                        })}
-                        
-                        {/* X-axis labels */}
-                        {analyticsData.monthlyViews.map((m, index) => {
-                          const chartWidth = 800
-                          const x = 80 + (index * (chartWidth - 160) / Math.max(analyticsData.monthlyViews.length - 1, 1))
-                          return (
-                            <text
-                              key={index}
-                              x={x}
-                              y="290"
-                              textAnchor="middle"
-                              className="small text-muted"
-                              fill="#6c757d"
-                              style={{fontSize: '11px'}}
-                            >
-                              {m.month}
-                            </text>
-                          )
-                        })}
-                      </>
-                    )}
-                  </svg>
-                  
-                  {/* Legend */}
-                  <div className="position-absolute top-0 end-0 p-3">
-                    <div className="d-flex align-items-center">
-                      <div className="w-3 h-3 bg-primary rounded-circle me-2"></div>
-                      <span className="small text-muted">Lượt xem</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* ĐÃ BỎ: Xu hướng sản phẩm theo tháng (7 danh mục) */}
 
         <div className="card border-0 shadow-sm mb-5">
           <div className="card-header bg-transparent border-0">
-            <div className="d-flex align-items-center justify-content-between">
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <h5 className="card-title mb-0">Lượt xem theo tháng</h5>
-              <TrendingUp className="w-5 h-5 text-info" />
+              <div className="d-flex align-items-center gap-2">
+                <select className="themed-select sm" value={monthlyAsPercent ? 'percent' : 'value'} onChange={(e)=>setMonthlyAsPercent(e.target.value === 'percent')}>
+                  <option value="value">Giá trị</option>
+                  <option value="percent">Phần trăm</option>
+                </select>
+              </div>
             </div>
           </div>
           <div className="card-body">
             <div className="row g-2 align-items-end" style={{height: '280px'}}>
               {analyticsData.monthlyViews?.map((m, idx) => {
                 const maxViews = Math.max(...analyticsData.monthlyViews.map(x => x.views)) || 1
-                const height = (m.views / maxViews) * 100
+                const totalYear = analyticsData.monthlyViews.reduce((s,x)=>s+x.views,0) || 1
+                const pctBase = monthlyAsPercent ? totalYear : maxViews
+                const displayValue = monthlyAsPercent ? ((m.views / totalYear) * 100).toFixed(1)+'%' : formatNumber(m.views)
+                const height = (m.views / pctBase) * 100
                 const colors = ['#0d6efd', '#198754', '#fd7e14', '#dc3545', '#6f42c1', '#20c997', '#ffc107']
                 const color = colors[idx % colors.length]
                 
@@ -629,7 +493,7 @@ const AdminAnalytics = () => {
                       {/* Value display */}
                       <div className="position-absolute top-0 start-50 translate-middle-x mb-2">
                         <div className="bg-dark text-white px-2 py-1 rounded small fw-bold">
-                          {formatNumber(m.views)}
+                          {displayValue}
                         </div>
                       </div>
                       
@@ -642,18 +506,21 @@ const AdminAnalytics = () => {
                             background: `linear-gradient(to top, ${color}, ${color}dd)`,
                             boxShadow: `0 2px 4px ${color}40`
                           }}
-                          data-bs-toggle="tooltip" 
-                          title={`${formatNumber(m.views)} lượt xem - ${m.month}`}
+                          onMouseEnter={(e)=>showTip(e, `${m.month}: ${formatNumber(m.views)} lượt xem`)}
+                          onMouseMove={moveTip}
+                          onMouseLeave={hideTip}
                         ></div>
                       </div>
                       
                       {/* Month label */}
                       <small className="text-muted mt-2 fw-medium">{m.month}</small>
                       
-                      {/* Percentage */}
-                      <small className="text-muted" style={{fontSize: '0.7rem'}}>
-                        {((m.views / maxViews) * 100).toFixed(1)}%
-                      </small>
+                       {/* Extra */}
+                       {!monthlyAsPercent && (
+                         <small className="text-muted" style={{fontSize: '0.7rem'}}>
+                           {( (m.views / maxViews) * 100).toFixed(1)}% so với tháng cao nhất
+                         </small>
+                       )}
                     </div>
                   </div>
                 )
@@ -683,6 +550,8 @@ const AdminAnalytics = () => {
             </div>
           </div>
         </div>
+
+        {/* Xu hướng sản phẩm theo tháng (multi-line) - ĐÃ GỠ BỎ THEO YÊU CẦU */}
 
         <div className="card border-0 shadow-sm">
           <div className="card-body">

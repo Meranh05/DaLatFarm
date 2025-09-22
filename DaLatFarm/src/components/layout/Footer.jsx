@@ -33,7 +33,7 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li><Link to="/" className="hover:text-white">Trang chủ</Link></li>
               <li><Link to="/products" className="hover:text-white">Sản phẩm</Link></li>
-              <li><Link to="/events" className="hover:text-white">Tin tức & Sự kiện</Link></li>
+              <li><Link to="/events" className="hover:text-white">Tin tức </Link></li>
               <li><Link to="/about" className="hover:text-white">Giới thiệu</Link></li>
               <li><Link to="/contact" className="hover:text-white">Liên hệ</Link></li>
             </ul>

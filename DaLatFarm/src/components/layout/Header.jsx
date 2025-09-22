@@ -114,11 +114,9 @@ const Header = () => {
                           <Link to="/products?category=mut" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Mứt</Link>
                           <Link to="/products?category=ca-phe" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Cà phê</Link>
                         </>
-                      ) : item.name === 'TIN TỨC SỰ KIỆN' ? (
+                      ) : item.name === 'TIN TỨC' ? (
                         <>
                           <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Tin tức</Link>
-                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Sự kiện</Link>
-                          <Link to="/events" className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600" style={{textDecoration: 'none'}}>Khuyến mãi</Link>
                         </>
                       ) : null}
                     </div>

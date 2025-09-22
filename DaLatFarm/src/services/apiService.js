@@ -147,6 +147,30 @@ export const productsAPI = {
     })
     return { id }
   },
+  // Ghi nhận lượt click xem chi tiết (clicksByDay.YYYY-MM-DD)
+  incrementClicks: async (id) => {
+    const refDoc = doc(db, 'products', id)
+    const dayStr = new Date().toISOString().slice(0, 10)
+    await updateDoc(refDoc, {
+      [`clicksByDay.${dayStr}`]: increment(1),
+      updatedAt: Date.now()
+    })
+    return { id }
+  },
+  // Cộng dồn thời gian đọc chi tiết sản phẩm
+  // - readTimeMsByDay.YYYY-MM-DD: tổng mili giây
+  // - readSessionsByDay.YYYY-MM-DD: số phiên để tính trung bình
+  addReadTime: async (id, elapsedMs) => {
+    if (!id || !Number.isFinite(elapsedMs) || elapsedMs <= 0) return { ok: false }
+    const refDoc = doc(db, 'products', id)
+    const dayStr = new Date().toISOString().slice(0, 10)
+    await updateDoc(refDoc, {
+      [`readTimeMsByDay.${dayStr}`]: increment(Math.round(elapsedMs)),
+      [`readSessionsByDay.${dayStr}`]: increment(1),
+      updatedAt: Date.now()
+    })
+    return { ok: true }
+  },
   // Register view once per device per day using a transaction + subcollection guard
   registerViewOncePerDay: async (id, deviceId) => {
     if (!id || !deviceId) return { created: false }
@@ -383,6 +407,70 @@ export const statsAPI = {
       }
     })
     return out
+  }
+}
+
+// Aggregated analytics helpers (read-only)
+export const analyticsAPI = {
+  // Tính lượt xem theo danh mục từ products
+  getCategoryViews: async () => {
+    const snap = await getDocs(collection(db, 'products'))
+    const map = new Map()
+    snap.docs.forEach(d => {
+      const data = d.data() || {}
+      const cat = data.category || 'Khác'
+      const views = Number(data.views || 0)
+      map.set(cat, (map.get(cat) || 0) + views)
+    })
+    const labels = Array.from(map.keys())
+    const values = labels.map(l => map.get(l))
+    return { labels, values }
+  },
+  // Tính clicks và thời gian đọc trung bình theo sản phẩm (top N)
+  getProductEngagement: async (topN = 10) => {
+    const snap = await getDocs(collection(db, 'products'))
+    const rows = snap.docs.map(d => {
+      const data = d.data() || {}
+      const clicksByDay = data.clicksByDay || {}
+      const readMsByDay = data.readTimeMsByDay || {}
+      const readSessionsByDay = data.readSessionsByDay || {}
+      const clicks = Object.values(clicksByDay).reduce((a, b) => a + Number(b || 0), 0)
+      const totalReadMs = Object.values(readMsByDay).reduce((a, b) => a + Number(b || 0), 0)
+      const totalSessions = Object.values(readSessionsByDay).reduce((a, b) => a + Number(b || 0), 0)
+      const avgReadSec = totalSessions > 0 ? Math.round(totalReadMs / totalSessions / 1000) : 0
+      return { id: d.id, name: data.name || 'Sản phẩm', clicks, avgReadSec }
+    })
+    rows.sort((a, b) => b.clicks - a.clicks)
+    return rows.slice(0, topN)
+  },
+  // Xu hướng theo thời gian: tổng views/clicks/readTime trung bình theo ngày
+  getTrendsByDay: async () => {
+    const snap = await getDocs(collection(db, 'products'))
+    const dayMap = new Map() // day -> { views, clicks, readMs, sessions }
+    const acc = (day, key, val) => {
+      const cur = dayMap.get(day) || { views: 0, clicks: 0, readMs: 0, sessions: 0 }
+      cur[key] += Number(val || 0)
+      dayMap.set(day, cur)
+    }
+    snap.docs.forEach(d => {
+      const data = d.data() || {}
+      const v = data.viewsByDay || {}
+      const c = data.clicksByDay || {}
+      const r = data.readTimeMsByDay || {}
+      const s = data.readSessionsByDay || {}
+      Object.entries(v).forEach(([day, val]) => acc(day, 'views', val))
+      Object.entries(c).forEach(([day, val]) => acc(day, 'clicks', val))
+      Object.entries(r).forEach(([day, val]) => acc(day, 'readMs', val))
+      Object.entries(s).forEach(([day, val]) => acc(day, 'sessions', val))
+    })
+    const days = Array.from(dayMap.keys()).sort()
+    const views = days.map(d => dayMap.get(d).views)
+    const clicks = days.map(d => dayMap.get(d).clicks)
+    const readAvgSec = days.map(d => {
+      const o = dayMap.get(d)
+      return o.sessions > 0 ? Math.round(o.readMs / o.sessions / 1000) : 0
+    })
+    return { days, views, clicks, readAvgSec }
   }
 }
 

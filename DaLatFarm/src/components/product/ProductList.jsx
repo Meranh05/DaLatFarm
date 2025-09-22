@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { productsAPI } from '../../services/apiService'
 
 const ProductList = ({ products, loading, viewMode }) => {
   if (loading) {
@@ -90,7 +91,9 @@ const ProductList = ({ products, loading, viewMode }) => {
           </div>
 
           <div className="card-body text-center">
-            <Link to={`/products/${product.id}`}>
+            <Link to={`/products/${product.id}`} onClick={() => {
+              try { productsAPI.incrementClicks(product.id) } catch (_) {}
+            }}>
               <h3 className="text-lg font-semibold text-gray-900 hover:text-red-600 transition-colors duration-200">
                 {product.name}
               </h3>

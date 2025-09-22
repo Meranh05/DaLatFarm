@@ -6,14 +6,11 @@ import {
   Users,
   Calendar,
   BarChart3,
-  FileText,
   Activity,
   ChevronRight,
-  Circle,
   Radio,
   Mail
 } from 'lucide-react'
-import RealTimeStatus from './RealTimeStatus'
 import { db } from '../../config/firebase'
 import { collection, onSnapshot } from 'firebase/firestore'
 
@@ -46,13 +43,7 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
       badge: realTimeData.products,
       description: 'Quản lý sản phẩm'
     },
-    { 
-      name: 'Người dùng', 
-      href: '/admin/users', 
-      icon: Users,
-      badge: realTimeData.users,
-      description: 'Quản lý người dùng'
-    },
+ 
     { 
       name: 'Sự kiện', 
       href: '/admin/events', 
@@ -61,20 +52,27 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
       description: 'Quản lý sự kiện'
     },
     { 
-      name: 'Thống kê', 
-      href: '/admin/analytics', 
-      icon: BarChart3,
-      badge: null,
-      description: 'Báo cáo và phân tích'
-    },
-    { 
       name: 'Liên hệ', 
       href: '/admin/contacts', 
       icon: Mail,
       badge: null,
       description: 'Tin nhắn khách hàng'
     },
-  
+    { 
+      name: 'Thống kê', 
+      href: '/admin/analytics', 
+      icon: BarChart3,
+      badge: null,
+      description: 'Báo cáo và phân tích'
+    },
+    
+    { 
+      name: 'Người dùng', 
+      href: '/admin/users', 
+      icon: Users,
+      badge: realTimeData.users,
+      description: 'Quản lý người dùng'
+    },
     { 
       name: 'Hoạt động', 
       href: '/admin/activity', 
@@ -94,12 +92,12 @@ const AdminSidebar = ({ isCollapsed = false, onToggleCollapse }) => {
   }
 
   return (
-    <div className={`${isCollapsed ? 'col-1' : 'col-1'} d-none d-lg-block position-sticky`} style={{top: '72px', height: 'calc(100vh - 72px)', width: isCollapsed ? '64px' : '200px'}}>
+    <div className={`col-1 d-none d-lg-block position-sticky`} style={{top: '72px', height: 'calc(100vh - 72px)', width: isCollapsed ? '64px' : '200px'}}>
       <div className="d-flex flex-column h-100 bg-white shadow-sm">
         {/* Logo */}
         <div className="d-flex align-items-center px-2 py-1.5 border-bottom">
           <Link to="/admin" className="d-flex align-items-center text-decoration-none w-100">
-            <div className="bg-primary rounded-circle p-1 me-2 shadow-sm">
+            <div className="bg-white rounded-circle p-1 me-2 shadow-sm">
               <img
                 src="/images/logoAdmin.png"
                 alt="DaLat Farm Admin"

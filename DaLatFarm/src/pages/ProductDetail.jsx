@@ -35,6 +35,21 @@ const ProductDetail = () => {
     incrementViews(id)
   }, [id, incrementViews])
 
+  // Đo thời gian đọc trang chi tiết để gửi analytics
+  const enterTimeRef = useRef(Date.now())
+  useEffect(() => {
+    enterTimeRef.current = Date.now()
+    return () => {
+      try {
+        const elapsed = Date.now() - (enterTimeRef.current || Date.now())
+        // Gửi lên API để cộng dồn thời gian đọc
+        import('../services/apiService').then(({ productsAPI }) => {
+          if (id) productsAPI.addReadTime(id, elapsed)
+        })
+      } catch (_) {}
+    }
+  }, [id])
+
   // Khi đổi id (chuyển sản phẩm khác), cuộn lên đầu trang
   useEffect(() => {
     try {
